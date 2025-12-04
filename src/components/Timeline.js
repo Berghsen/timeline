@@ -197,6 +197,7 @@ const Timeline = () => {
       fetchAllEntries();
       fetchWeekEntries();
       fetchMonthEntries();
+      setError('');
     } catch (err) {
       console.error('Error saving entry:', err);
       setError(err.message || 'Failed to save entry');
@@ -372,13 +373,28 @@ const Timeline = () => {
 
   const handleDateClick = (date) => {
     const dateStr = date.toISOString().split('T')[0];
-    setSelectedDate(dateStr);
-    setShowForm(true);
-    setEditingId(null);
-    setStartTime('');
-    setEndTime('');
-    setComment('');
-    setRechtstreeks(false);
+    const dateEntries = getEntriesForDate(date);
+    
+    if (dateEntries.length > 0) {
+      // If there are entries, edit the first one
+      const firstEntry = dateEntries[0];
+      setSelectedDate(dateStr);
+      setEditingId(firstEntry.id);
+      setStartTime(firstEntry.start_time);
+      setEndTime(firstEntry.end_time);
+      setComment(firstEntry.comment || '');
+      setRechtstreeks(firstEntry.rechtstreeks || false);
+      setShowForm(true);
+    } else {
+      // If no entries, create a new one
+      setSelectedDate(dateStr);
+      setShowForm(true);
+      setEditingId(null);
+      setStartTime('');
+      setEndTime('');
+      setComment('');
+      setRechtstreeks(false);
+    }
   };
 
   const handleAddNew = () => {
@@ -699,13 +715,21 @@ const Timeline = () => {
                   )}
                   <div className="entry-actions">
                     <button
-                      onClick={() => handleEdit(entry)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(entry);
+                      }}
                       className="edit-button"
                     >
                       Bewerken
                     </button>
                     <button
-                      onClick={() => handleDelete(entry.id)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(entry.id);
+                      }}
                       className="delete-button"
                     >
                       Verwijderen
@@ -761,16 +785,24 @@ const Timeline = () => {
                           )}
                           <div className="entry-actions">
                             <button
-                              onClick={() => handleEdit(entry)}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(entry);
+                              }}
                               className="edit-button"
                             >
-                              Edit
+                              Bewerken
                             </button>
                             <button
-                              onClick={() => handleDelete(entry.id)}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(entry.id);
+                              }}
                               className="delete-button"
                             >
-                              Delete
+                              Verwijderen
                             </button>
                           </div>
                         </div>
