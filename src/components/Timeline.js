@@ -438,20 +438,19 @@ const Timeline = () => {
         </div>
       </div>
 
-      {!showForm && (
-        <button className="add-entry-button" onClick={handleAddNew}>
-          + Nieuw Item Toevoegen
-        </button>
-      )}
+      <button className="add-entry-button" onClick={handleAddNew}>
+        + Nieuw Item Toevoegen
+      </button>
 
       {showForm && (
-        <div className="timeline-form-section">
-          <div className="form-header">
-            <h2>{editingId ? 'Item Bewerken' : 'Nieuw Item'}</h2>
-            <button className="close-form-button" onClick={handleCancel}>×</button>
-          </div>
-          {error && <div className="error-message">{error}</div>}
-          <form onSubmit={handleSubmit}>
+        <div className="entry-modal-overlay" onClick={handleCancel}>
+          <div className="entry-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="form-header">
+              <h2>{editingId ? 'Item Bewerken' : 'Nieuw Item'}</h2>
+              <button className="close-form-button" onClick={handleCancel}>×</button>
+            </div>
+            {error && <div className="error-message">{error}</div>}
+            <form onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="date">Datum</label>
@@ -515,6 +514,7 @@ const Timeline = () => {
               </button>
             </div>
           </form>
+          </div>
         </div>
       )}
 

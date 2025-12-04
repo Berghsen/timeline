@@ -18,33 +18,22 @@
   top: 1rem;
   left: 1rem;
   z-index: 999;
-  background: white;
-  border: 2px solid #667eea;
+  background: #667eea;
+  color: white;
+  border: none;
   border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 1.2rem;
+  padding: 0.75rem 1rem;
+  font-size: 1.5rem;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transition: all 0.3s;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.mobile-menu-button::before {
-  content: '';
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  background-image: url('https://cdn.asp.events/CLIENT_IBC_4ED0594D_5056_B739_542FB395BDA17423/sites/ibc-2023/media/libraries/2024-verified-suppliers/hpj-.png/fit-in/700x9999/filters:no_upscale()');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  vertical-align: middle;
-  margin-right: 0.5rem;
+  line-height: 1;
+  font-weight: bold;
 }
 
 .mobile-menu-button:hover {
-  background: #f0f0ff;
+  background: #5568d3;
+  transform: scale(1.05);
 }
 
 .sidebar-overlay {

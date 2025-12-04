@@ -24,7 +24,7 @@ const EmployeeDashboard = () => {
         <button 
           className="mobile-menu-button"
           onClick={() => setSidebarOpen(true)}
-          aria-label="Open menu"
+          aria-label="Menu openen"
         >
           ☰
         </button>
