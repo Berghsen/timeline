@@ -163,6 +163,18 @@ If you can't sign in:
 - Service role key is only used on the backend
 - Frontend uses the anon key with RLS policies
 
+## Deployment
+
+See `DEPLOYMENT.md` for detailed deployment instructions to Vercel and other platforms.
+
+### Quick Vercel Deployment
+
+1. Push your code to GitHub
+2. Import project in Vercel
+3. Set Root Directory to `client` (or configure in vercel.json)
+4. Add environment variables in Vercel dashboard
+5. Deploy!
+
 ## License
 
 ISC
