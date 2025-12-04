@@ -45,24 +45,53 @@ const Employees = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/api/admin/employees`, {
+      // Use relative path for Vercel, or API_URL if set (for local dev)
+      const url = API_URL ? `${API_URL}/api/admin/employees` : '/api/admin/employees';
+      console.log('Fetching employees from:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      // Get response as text first to see what we're actually getting
+      const responseText = await response.text();
+      console.log('Response text (first 500 chars):', responseText.substring(0, 500));
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        let errorData = {};
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Failed to parse error as JSON:', e);
+          errorData = { error: `Server returned non-JSON error: ${response.status} ${response.statusText}` };
+        }
         throw new Error(errorData.error || `Failed to fetch employees: ${response.status}`);
       }
 
-      const data = await response.json();
-      setEmployees(data || []);
+      // Try to parse as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        console.error('Full response:', responseText);
+        throw new Error('Server returned non-JSON response. Check console for details.');
+      }
+
+      console.log('Fetched employees successfully:', data);
+      setEmployees(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching employees:', error);
       setEmployees([]);
       // Show error to user
-      alert(`Error loading employees: ${error.message}`);
+      alert(`Fout bij het laden van medewerkers: ${error.message}`);
     } finally {
       setLoading(false);
     }
