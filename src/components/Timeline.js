@@ -309,13 +309,51 @@ const Timeline = () => {
   const getMonthStats = () => {
     const totalMinutes = calculateTotalDuration(monthEntries);
     const uniqueDays = new Set(monthEntries.map(entry => entry.date)).size;
-    const monthName = currentWeekStart.toLocaleDateString('en-US', { month: 'long' });
+    const monthName = new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long' });
     
     return {
       totalHours: totalMinutes,
       totalDays: uniqueDays,
       monthName: monthName
     };
+  };
+
+  const navigateMonth = (direction) => {
+    if (direction === 1) {
+      if (currentMonth === 11) {
+        setCurrentMonth(0);
+        setCurrentYear(currentYear + 1);
+      } else {
+        setCurrentMonth(currentMonth + 1);
+      }
+    } else {
+      if (currentMonth === 0) {
+        setCurrentMonth(11);
+        setCurrentYear(currentYear - 1);
+      } else {
+        setCurrentMonth(currentMonth - 1);
+      }
+    }
+  };
+
+  const goToCurrentMonth = () => {
+    const today = new Date();
+    setCurrentMonth(today.getMonth());
+    setCurrentYear(today.getFullYear());
+  };
+
+  const getMonthDates = () => {
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const dates = [];
+    const startDate = new Date(firstDay);
+    
+    while (startDate <= lastDay) {
+      dates.push(new Date(startDate));
+      startDate.setDate(startDate.getDate() + 1);
+    }
+    
+    return dates;
   };
 
   const navigateWeek = (direction) => {
@@ -355,7 +393,11 @@ const Timeline = () => {
 
   const getEntriesForDate = (date) => {
     const dateStr = date.toISOString().split('T')[0];
-    return weekEntries.filter(entry => entry.date === dateStr);
+    if (viewMode === 'weekly') {
+      return weekEntries.filter(entry => entry.date === dateStr);
+    } else {
+      return monthEntries.filter(entry => entry.date === dateStr);
+    }
   };
 
   const getTotalForDate = (date) => {
