@@ -2,7 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import './Employees.css';
 
-const API_URL = process.env.REACT_APP_API_URL || '';
+// Helper function to make API calls - works both locally (with proxy) and on Vercel
+const apiFetch = async (endpoint, options = {}) => {
+  const url = endpoint.startsWith('/') ? endpoint : `/api/${endpoint}`;
+  
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  // Get response as text first to handle both JSON and errors
+  const responseText = await response.text();
+  
+  // Check if response is HTML (means it hit the React app instead of API)
+  if (responseText.trim().startsWith('<!')) {
+    throw new Error(`API endpoint not found: ${url}. Check Vercel function deployment.`);
+  }
+
+  // Try to parse as JSON
+  let data;
+  try {
+    data = responseText ? JSON.parse(responseText) : null;
+  } catch (e) {
+    console.error('Failed to parse response as JSON:', e);
+    console.error('Response text:', responseText.substring(0, 200));
+    throw new Error(`Server returned invalid JSON: ${response.status} ${response.statusText}`);
+  }
+
+  if (!response.ok) {
+    const errorMessage = data?.error || `Request failed: ${response.status} ${response.statusText}`;
+    throw new Error(errorMessage);
+  }
+
+  return data;
+};
 
 const Employees = () => {
   const { supabase } = useAuth();
@@ -45,54 +81,17 @@ const Employees = () => {
         return;
       }
 
-      // For local dev: use proxy (package.json) or API_URL if set
-      // For Vercel: use relative path
-      // The proxy in package.json will forward /api/* to http://localhost:3001
-      const url = API_URL ? `${API_URL}/api/admin/employees` : '/api/admin/employees';
-      console.log('Fetching employees from:', url);
-
-      const response = await fetch(url, {
+      const data = await apiFetch('/api/admin/employees', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
         },
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-      // Get response as text first to see what we're actually getting
-      const responseText = await response.text();
-      console.log('Response text (first 500 chars):', responseText.substring(0, 500));
-
-      if (!response.ok) {
-        let errorData = {};
-        try {
-          errorData = JSON.parse(responseText);
-        } catch (e) {
-          console.error('Failed to parse error as JSON:', e);
-          errorData = { error: `Server returned non-JSON error: ${response.status} ${response.statusText}` };
-        }
-        throw new Error(errorData.error || `Failed to fetch employees: ${response.status}`);
-      }
-
-      // Try to parse as JSON
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Failed to parse response as JSON:', e);
-        console.error('Full response:', responseText);
-        throw new Error('Server returned non-JSON response. Check console for details.');
-      }
-
-      console.log('Fetched employees successfully:', data);
       setEmployees(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching employees:', error);
       setEmployees([]);
-      // Show error to user
       alert(`Fout bij het laden van medewerkers: ${error.message}`);
     } finally {
       setLoading(false);
@@ -105,18 +104,14 @@ const Employees = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const response = await fetch(`${API_URL}/api/admin/employees/${employeeId}/time-entries`, {
+      const data = await apiFetch(`/api/admin/employees/${employeeId}/time-entries`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch time entries');
-      }
-
-      const data = await response.json();
-      setTimeEntries(data);
+      setTimeEntries(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching time entries:', error);
       setTimeEntries([]);
@@ -148,21 +143,13 @@ const Employees = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/api/admin/employees/${selectedEmployee.id}/travel-time`, {
+      const updatedEmployee = await apiFetch(`/api/admin/employees/${selectedEmployee.id}/travel-time`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ travel_time_minutes: travelTimeValue }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to update travel time: ${response.status}`);
-      }
-
-      const updatedEmployee = await response.json();
       setSelectedEmployee(updatedEmployee);
       setEditingTravelTime(false);
       
