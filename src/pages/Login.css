@@ -8,11 +8,11 @@
 
 .login-card {
   background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
 }
 
 .login-logo-container {
@@ -32,14 +32,17 @@
   text-align: center;
   color: #333;
   margin-bottom: 0.5rem;
+  font-size: 1.8rem;
 }
 
 .login-card h2 {
   text-align: center;
   color: #666;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: normal;
   margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .form-group {

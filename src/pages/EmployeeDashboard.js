@@ -7,6 +7,7 @@ import './Dashboard.css';
 const EmployeeDashboard = () => {
   const { user, signOut } = useAuth();
   const [activePage, setActivePage] = useState('timeline');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="dashboard-container">
@@ -16,10 +17,22 @@ const EmployeeDashboard = () => {
         setActivePage={setActivePage}
         onSignOut={signOut}
         isAdmin={false}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       <div className="dashboard-content">
+        <button 
+          className="mobile-menu-button"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
         {activePage === 'timeline' && <Timeline />}
       </div>
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>
+      )}
     </div>
   );
 };

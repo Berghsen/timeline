@@ -1,9 +1,17 @@
 import React from 'react';
 import './Sidebar.css';
 
-const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin }) => {
+const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, onClose }) => {
+  const handleNavClick = (page) => {
+    setActivePage(page);
+    if (onClose) onClose();
+  };
+
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <button className="sidebar-close-button" onClick={onClose} aria-label="Close menu">
+        ×
+      </button>
       <div className="sidebar-header">
         <div className="logo-container">
           <img 
@@ -12,32 +20,32 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin }) => {
             className="company-logo"
           />
         </div>
-        <h2>Time Tracker</h2>
+        <h2>Tijdregistratie</h2>
         <div className="user-info">
           <div className="user-name">{user?.profile?.full_name || user?.email}</div>
-          <div className="user-role">{isAdmin ? 'Administrator' : 'Employee'}</div>
+          <div className="user-role">{isAdmin ? 'Beheerder' : 'Medewerker'}</div>
         </div>
       </div>
       <nav className="sidebar-nav">
         {isAdmin ? (
           <button
             className={`nav-item ${activePage === 'employees' ? 'active' : ''}`}
-            onClick={() => setActivePage('employees')}
+            onClick={() => handleNavClick('employees')}
           >
-            Employees
+            Medewerkers
           </button>
         ) : (
           <button
             className={`nav-item ${activePage === 'timeline' ? 'active' : ''}`}
-            onClick={() => setActivePage('timeline')}
+            onClick={() => handleNavClick('timeline')}
           >
-            Timeline
+            Tijdlijn
           </button>
         )}
       </nav>
       <div className="sidebar-footer">
         <button className="sign-out-button" onClick={onSignOut}>
-          Sign Out
+          Uitloggen
         </button>
       </div>
     </div>

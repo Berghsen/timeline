@@ -9,7 +9,7 @@ const Timeline = () => {
   const [weekEntries, setWeekEntries] = useState([]);
   const [monthEntries, setMonthEntries] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState('date'); // 'date' or 'all'
+  const [viewMode, setViewMode] = useState('weekly'); // 'weekly' or 'monthly'
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
@@ -18,21 +18,31 @@ const Timeline = () => {
     const monday = new Date(today.setDate(diff));
     return new Date(monday.setHours(0, 0, 0, 0));
   });
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [comment, setComment] = useState('');
+  const [rechtstreeks, setRechtstreeks] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    if (viewMode === 'date') {
-      fetchEntries();
+    fetchWeekEntries();
+    fetchMonthEntries();
+    if (viewMode === 'weekly') {
+      const weekEnd = new Date(currentWeekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      const weekDates = getWeekDates();
+      const dateInWeek = weekDates.find(d => d.toISOString().split('T')[0] === selectedDate);
+      if (dateInWeek) {
+        fetchEntries();
+      }
     } else {
       fetchAllEntries();
     }
-    fetchWeekEntries();
-    fetchMonthEntries();
-  }, [selectedDate, viewMode, currentWeekStart]);
+  }, [selectedDate, viewMode, currentWeekStart, currentMonth, currentYear]);
 
   const fetchEntries = async () => {
     setLoading(true);
@@ -123,6 +133,9 @@ const Timeline = () => {
     setStartTime(entry.start_time);
     setEndTime(entry.end_time);
     setComment(entry.comment || '');
+    setRechtstreeks(entry.rechtstreeks || false);
+    setSelectedDate(entry.date);
+    setShowForm(true);
   };
 
   const handleCancel = () => {
@@ -130,6 +143,8 @@ const Timeline = () => {
     setStartTime('');
     setEndTime('');
     setComment('');
+    setRechtstreeks(false);
+    setShowForm(false);
   };
 
   const handleSubmit = async (e) => {
@@ -137,12 +152,12 @@ const Timeline = () => {
     setError('');
 
     if (!startTime || !endTime) {
-      setError('Please fill in both start and end times');
+      setError('Vul zowel start- als eindtijd in');
       return;
     }
 
     if (startTime >= endTime) {
-      setError('End time must be after start time');
+      setError('Eindtijd moet na starttijd zijn');
       return;
     }
 
@@ -155,6 +170,7 @@ const Timeline = () => {
             start_time: startTime,
             end_time: endTime,
             comment: comment || null,
+            rechtstreeks: rechtstreeks,
           })
           .eq('id', editingId)
           .eq('user_id', user.id);
@@ -170,17 +186,15 @@ const Timeline = () => {
             start_time: startTime,
             end_time: endTime,
             comment: comment || null,
+            rechtstreeks: rechtstreeks,
           });
 
         if (error) throw error;
       }
 
       handleCancel();
-      if (viewMode === 'date') {
-        fetchEntries();
-      } else {
-        fetchAllEntries();
-      }
+      fetchEntries();
+      fetchAllEntries();
       fetchWeekEntries();
       fetchMonthEntries();
     } catch (err) {
@@ -190,7 +204,7 @@ const Timeline = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this entry?')) {
+    if (!window.confirm('Weet u zeker dat u dit item wilt verwijderen?')) {
       return;
     }
 
@@ -202,11 +216,8 @@ const Timeline = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      if (viewMode === 'date') {
-        fetchEntries();
-      } else {
-        fetchAllEntries();
-      }
+      fetchEntries();
+      fetchAllEntries();
       fetchWeekEntries();
     } catch (err) {
       console.error('Error deleting entry:', err);
@@ -324,8 +335,22 @@ const Timeline = () => {
   const handleDateClick = (date) => {
     const dateStr = date.toISOString().split('T')[0];
     setSelectedDate(dateStr);
-    setViewMode('date');
-    handleCancel();
+    setShowForm(true);
+    setEditingId(null);
+    setStartTime('');
+    setEndTime('');
+    setComment('');
+    setRechtstreeks(false);
+  };
+
+  const handleAddNew = () => {
+    setShowForm(true);
+    setEditingId(null);
+    setStartTime('');
+    setEndTime('');
+    setComment('');
+    setRechtstreeks(false);
+    setSelectedDate(new Date().toISOString().split('T')[0]);
   };
 
   const getEntriesForDate = (date) => {
@@ -348,53 +373,58 @@ const Timeline = () => {
     return dateStr === selectedDate;
   };
 
-  const entriesToShow = viewMode === 'date' ? entries : allEntries;
-  const groupedEntries = viewMode === 'all' ? groupEntriesByDate(allEntries) : {};
-  const totalMinutes = viewMode === 'date' 
-    ? calculateTotalDuration(entries)
-    : calculateTotalDuration(allEntries);
+  const entriesToShow = entries;
+  const groupedEntries = viewMode === 'monthly' ? groupEntriesByDate(monthEntries) : {};
 
   return (
     <div className="timeline-container">
       <div className="timeline-header">
-        <h1>Timeline</h1>
+        <h1>Tijdlijn</h1>
         <div className="view-mode-toggle">
           <button
-            className={`view-mode-btn ${viewMode === 'date' ? 'active' : ''}`}
-            onClick={() => setViewMode('date')}
+            className={`view-mode-btn ${viewMode === 'weekly' ? 'active' : ''}`}
+            onClick={() => setViewMode('weekly')}
           >
-            Single Date
+            Week
           </button>
           <button
-            className={`view-mode-btn ${viewMode === 'all' ? 'active' : ''}`}
-            onClick={() => setViewMode('all')}
+            className={`view-mode-btn ${viewMode === 'monthly' ? 'active' : ''}`}
+            onClick={() => setViewMode('monthly')}
           >
-            All Entries
+            Maand
           </button>
         </div>
       </div>
-      
-      <div className="timeline-content">
+
+      {!showForm && (
+        <button className="add-entry-button" onClick={handleAddNew}>
+          + Nieuw Item Toevoegen
+        </button>
+      )}
+
+      {showForm && (
         <div className="timeline-form-section">
-          <h2>{editingId ? 'Edit Entry' : 'New Entry'}</h2>
+          <div className="form-header">
+            <h2>{editingId ? 'Item Bewerken' : 'Nieuw Item'}</h2>
+            <button className="close-form-button" onClick={handleCancel}>×</button>
+          </div>
           {error && <div className="error-message">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="date">Date</label>
+                <label htmlFor="date">Datum</label>
                 <input
                   id="date"
                   type="date"
                   value={selectedDate}
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
-                    handleCancel();
                   }}
                   disabled={!!editingId}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="startTime">Start Time</label>
+                <label htmlFor="startTime">Starttijd</label>
                 <input
                   id="startTime"
                   type="time"
@@ -404,7 +434,7 @@ const Timeline = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="endTime">End Time</label>
+                <label htmlFor="endTime">Eindtijd</label>
                 <input
                   id="endTime"
                   type="time"
@@ -415,30 +445,305 @@ const Timeline = () => {
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="comment">Comment</label>
+              <label htmlFor="comment">Opmerking</label>
               <textarea
                 id="comment"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows="3"
-                placeholder="Optional note about your work..."
+                placeholder="Optionele notitie over uw werk..."
               />
+            </div>
+            <div className="form-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={rechtstreeks}
+                  onChange={(e) => setRechtstreeks(e.target.checked)}
+                />
+                Rechtstreeks
+              </label>
             </div>
             <div className="form-actions">
               <button type="submit" className="submit-button">
-                {editingId ? 'Update Entry' : 'Save Entry'}
+                {editingId ? 'Bijwerken' : 'Opslaan'}
               </button>
-              {editingId && (
-                <button type="button" onClick={handleCancel} className="cancel-button">
-                  Cancel
-                </button>
-              )}
+              <button type="button" onClick={handleCancel} className="cancel-button">
+                Annuleren
+              </button>
             </div>
           </form>
         </div>
+      )}
 
+      {viewMode === 'weekly' ? (
+        <div className="weekly-overview-section">
+          <div className="weekly-header">
+            <div className="week-title">{getWeekTitle()}</div>
+            <div className="week-navigation">
+              <button onClick={() => navigateWeek(-1)} className="nav-button">
+                ← Previous Week
+              </button>
+              <button onClick={goToCurrentWeek} className="nav-button today">
+                Current Week
+              </button>
+              <button onClick={() => navigateWeek(1)} className="nav-button">
+                Next Week →
+              </button>
+            </div>
+          </div>
+          <div className="week-total">
+            Total: {Math.floor(getWeekTotal() / 60)}h {getWeekTotal() % 60}m
+          </div>
+          <div className="statistics-section">
+            <div className="stat-card">
+              <div className="stat-label">Total hours worked in Week {getWeekNumber(currentWeekStart)}</div>
+              <div className="stat-value">{Math.floor(getWeekTotal() / 60)}h {getWeekTotal() % 60}m</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Total days worked in {getMonthStats().monthName}</div>
+              <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'day' : 'days'}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Total hours worked in {getMonthStats().monthName}</div>
+              <div className="stat-value">{Math.floor(getMonthStats().totalHours / 60)}h {getMonthStats().totalHours % 60}m</div>
+            </div>
+          </div>
+          <div className="week-calendar">
+            {getWeekDates().map((date, index) => {
+              const dateEntries = getEntriesForDate(date);
+              const totalMinutes = getTotalForDate(date);
+              const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+              const dayNumber = date.getDate();
+              const isCurrentDay = isToday(date);
+              const isSelectedDay = isSelected(date);
+
+              return (
+                <div
+                  key={index}
+                  className={`calendar-day ${isCurrentDay ? 'today' : ''} ${isSelectedDay ? 'selected' : ''} clickable`}
+                  onClick={() => handleDateClick(date)}
+                >
+                  <div className="day-header">
+                    <div className="day-name">{dayName}</div>
+                    <div className="day-number">{dayNumber}</div>
+                  </div>
+                  <div className="day-entries">
+                    {dateEntries.length > 0 ? (
+                      <>
+                        <div className="day-entry-count">{dateEntries.length} {dateEntries.length === 1 ? 'item' : 'items'}</div>
+                        <div className="day-total">
+                          {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
+                        </div>
+                        <div className="day-entry-preview">
+                          {dateEntries.slice(0, 2).map((entry, idx) => (
+                            <div key={idx} className="preview-entry">
+                              {entry.start_time.substring(0, 5)} - {entry.end_time.substring(0, 5)}
+                            </div>
+                          ))}
+                          {dateEntries.length > 2 && (
+                            <div className="preview-more">+{dateEntries.length - 2} more</div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="day-empty">Tik om toe te voegen</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="monthly-overview-section">
+          <div className="monthly-header">
+            <div className="month-title">
+              {new Date(currentYear, currentMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </div>
+            <div className="month-navigation">
+              <button onClick={() => navigateMonth(-1)} className="nav-button">
+                ← Vorige Maand
+              </button>
+              <button onClick={goToCurrentMonth} className="nav-button today">
+                Huidige Maand
+              </button>
+              <button onClick={() => navigateMonth(1)} className="nav-button">
+                Volgende Maand →
+              </button>
+            </div>
+          </div>
+          <div className="month-stats">
+            <div className="stat-card">
+              <div className="stat-label">Totaal gewerkte dagen in {getMonthStats().monthName}</div>
+              <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'dag' : 'dagen'}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Totaal gewerkte uren in {getMonthStats().monthName}</div>
+              <div className="stat-value">{Math.floor(getMonthStats().totalHours / 60)}u {getMonthStats().totalHours % 60}m</div>
+            </div>
+          </div>
+          <div className="month-calendar">
+            {getMonthDates().map((date, index) => {
+              const dateEntries = getEntriesForDate(date);
+              const totalMinutes = getTotalForDate(date);
+              const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+              const dayNumber = date.getDate();
+              const isCurrentDay = isToday(date);
+
+              return (
+                <div
+                  key={index}
+                  className={`month-calendar-day ${isCurrentDay ? 'today' : ''} ${dateEntries.length > 0 ? 'has-entries' : ''} clickable`}
+                  onClick={() => handleDateClick(date)}
+                >
+                  <div className="day-header">
+                    <div className="day-name">{dayName}</div>
+                    <div className="day-number">{dayNumber}</div>
+                  </div>
+                  <div className="day-entries">
+                    {dateEntries.length > 0 ? (
+                      <>
+                        <div className="day-entry-count">{dateEntries.length}</div>
+                        <div className="day-total">
+                          {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
+                        </div>
+                      </>
+                    ) : (
+                      <div className="day-empty">-</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'weekly' && selectedDate && (
         <div className="timeline-entries-section">
-          {viewMode === 'date' ? (
+          <div className="entries-header">
+            <h2>Items voor {new Date(selectedDate).toLocaleDateString('nl-NL')}</h2>
+            <div className="date-navigation">
+              <button onClick={() => navigateDate(-1)} className="nav-button">
+                ← Vorige
+              </button>
+              <button onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])} className="nav-button today">
+                Vandaag
+              </button>
+              <button onClick={() => navigateDate(1)} className="nav-button">
+                Volgende →
+              </button>
+            </div>
+          </div>
+          {loading ? (
+            <div className="loading">Items laden...</div>
+          ) : entries.length === 0 ? (
+            <div className="no-entries">Geen items voor deze datum</div>
+          ) : (
+            <div className="entries-list">
+              {entries.map((entry) => (
+                <div key={entry.id} className="entry-card">
+                  <div className="entry-header">
+                    <div className="entry-time">
+                      {entry.start_time} - {entry.end_time}
+                    </div>
+                    <div className="entry-duration">
+                      {calculateDuration(entry.start_time, entry.end_time)}
+                    </div>
+                  </div>
+                  {entry.comment && (
+                    <div className="entry-comment">{entry.comment}</div>
+                  )}
+                  <div className="entry-actions">
+                    <button
+                      onClick={() => handleEdit(entry)}
+                      className="edit-button"
+                    >
+                      Bewerken
+                    </button>
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      className="delete-button"
+                    >
+                      Verwijderen
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {viewMode === 'monthly' && (
+        <div className="timeline-entries-section">
+          <div className="entries-header">
+            <h2>Alle Items</h2>
+            {allEntries.length > 0 && (
+              <div className="total-summary">
+                Totaal: {Math.floor(calculateTotalDuration(allEntries) / 60)}u {calculateTotalDuration(allEntries) % 60}m ({allEntries.length} items)
+              </div>
+            )}
+          </div>
+          {loading ? (
+            <div className="loading">Items laden...</div>
+          ) : allEntries.length === 0 ? (
+            <div className="no-entries">Geen items gevonden</div>
+          ) : (
+            <div className="all-entries-list">
+              {Object.keys(groupedEntries).sort((a, b) => b.localeCompare(a)).map((date) => {
+                const dateEntries = groupedEntries[date];
+                const dateTotal = calculateTotalDuration(dateEntries);
+                return (
+                  <div key={date} className="date-group">
+                    <div className="date-group-header">
+                      <h3>{new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+                      <div className="date-group-total">
+                        {Math.floor(dateTotal / 60)}u {dateTotal % 60}m ({dateEntries.length} {dateEntries.length === 1 ? 'item' : 'items'})
+                      </div>
+                    </div>
+                    <div className="entries-list">
+                      {dateEntries.map((entry) => (
+                        <div key={entry.id} className="entry-card">
+                          <div className="entry-header">
+                            <div className="entry-time">
+                              {entry.start_time} - {entry.end_time}
+                            </div>
+                            <div className="entry-duration">
+                              {calculateDuration(entry.start_time, entry.end_time)}
+                            </div>
+                          </div>
+                          {entry.comment && (
+                            <div className="entry-comment">{entry.comment}</div>
+                          )}
+                          <div className="entry-actions">
+                            <button
+                              onClick={() => handleEdit(entry)}
+                              className="edit-button"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(entry.id)}
+                              className="delete-button"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
             <>
               <div className="entries-header">
                 <h2>Entries for {new Date(selectedDate).toLocaleDateString()}</h2>

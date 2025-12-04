@@ -20,7 +20,7 @@ const Login = () => {
       await signIn(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.message || 'Failed to sign in');
+      setError(err.message || 'Inloggen mislukt');
     } finally {
       setLoading(false);
     }
@@ -36,8 +36,8 @@ const Login = () => {
             className="company-logo-login"
           />
         </div>
-        <h1>Time Tracker</h1>
-        <h2>Sign In</h2>
+        <h1>Tijdregistratie</h1>
+        <h2>Inloggen</h2>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -63,7 +63,7 @@ const Login = () => {
             />
           </div>
           <button type="submit" disabled={loading} className="submit-button">
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Inloggen...' : 'Inloggen'}
           </button>
         </form>
       </div>

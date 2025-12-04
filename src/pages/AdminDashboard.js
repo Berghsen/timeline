@@ -7,6 +7,7 @@ import './Dashboard.css';
 const AdminDashboard = () => {
   const { user, signOut } = useAuth();
   const [activePage, setActivePage] = useState('employees');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="dashboard-container">
@@ -16,10 +17,22 @@ const AdminDashboard = () => {
         setActivePage={setActivePage}
         onSignOut={signOut}
         isAdmin={true}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       <div className="dashboard-content">
+        <button 
+          className="mobile-menu-button"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
         {activePage === 'employees' && <Employees />}
       </div>
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>
+      )}
     </div>
   );
 };

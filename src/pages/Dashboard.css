@@ -2,18 +2,75 @@
   display: flex;
   min-height: 100vh;
   background-color: #f5f5f5;
+  position: relative;
 }
 
 .dashboard-content {
   flex: 1;
   margin-left: 250px;
   padding: 2rem;
+  position: relative;
+}
+
+.mobile-menu-button {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 999;
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobile-menu-button::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-image: url('https://cdn.asp.events/CLIENT_IBC_4ED0594D_5056_B739_542FB395BDA17423/sites/ibc-2023/media/libraries/2024-verified-suppliers/hpj-.png/fit-in/700x9999/filters:no_upscale()');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+.mobile-menu-button:hover {
+  background: #f0f0ff;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
 }
 
 @media (max-width: 768px) {
   .dashboard-content {
     margin-left: 0;
     padding: 1rem;
+    padding-top: 4rem;
+  }
+
+  .mobile-menu-button {
+    display: block;
+  }
+
+  .sidebar-overlay {
+    display: block;
   }
 }
 
