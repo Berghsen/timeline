@@ -1,80 +1,56 @@
-# Deployment Guide for Vercel
+# Vercel Deployment Guide
 
-## Frontend Deployment (Vercel)
+This project is now configured as a single-folder structure for easy Vercel deployment.
 
-### 1. Environment Variables
+## Quick Deploy
 
-In your Vercel project settings, add these environment variables:
+1. **Push to GitHub** (if not already done)
+2. **Import to Vercel**:
+   - Go to [vercel.com](https://vercel.com)
+   - Click "New Project"
+   - Import your GitHub repository
+3. **Add Environment Variables** in Vercel project settings:
+   - `REACT_APP_SUPABASE_URL` - Your Supabase project URL
+   - `REACT_APP_SUPABASE_ANON_KEY` - Your Supabase anon/public key
+   - `SUPABASE_URL` - Your Supabase project URL (same as above)
+   - `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key (for API routes)
+4. **Deploy!** - Vercel will automatically detect the React app and deploy
 
-```
-REACT_APP_SUPABASE_URL=your_supabase_project_url
-REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
-REACT_APP_API_URL=your_backend_api_url
-```
+## Project Structure
 
-**Important:** 
-- Replace `your_backend_api_url` with your deployed backend URL (see Backend Deployment below)
-- If deploying backend separately, use that URL
-- If using Vercel serverless functions for the backend, use your Vercel domain
+The project is now organized as:
+- **Root**: All React app files
+- **`api/`**: Vercel serverless functions (backend API)
+- **`src/`**: React source code
+- **`public/`**: Static assets
 
-### 2. Vercel Project Settings
+## How It Works
 
-1. Go to your Vercel project settings
-2. Under "Build & Development Settings":
-   - **Framework Preset:** Create React App
-   - **Root Directory:** Leave empty (or set to `client` if needed)
-   - **Build Command:** `cd client && npm run build`
-   - **Output Directory:** `client/build`
-   - **Install Command:** `cd client && npm install`
+- **Frontend**: React app builds to `build/` directory
+- **Backend**: API routes in `api/` become serverless functions
+- **Routing**: All routes go through React Router, API routes are handled by Vercel
 
-### 3. Deploy
+## Environment Variables
 
-Push to your Git repository and Vercel will automatically deploy.
-
-## Backend Deployment Options
-
-### Option 1: Deploy Backend Separately (Recommended)
-
-Deploy your Node.js backend to:
-- **Railway** (railway.app)
-- **Render** (render.com)
-- **Heroku** (heroku.com)
-- **DigitalOcean App Platform**
-- Or any Node.js hosting service
-
-Then update `REACT_APP_API_URL` in Vercel to point to your backend URL.
-
-### Option 2: Vercel Serverless Functions
-
-Convert your Express routes to Vercel serverless functions. This requires restructuring the backend code.
-
-### Option 3: Keep Backend Local (Development Only)
-
-For development, run the backend locally and use `http://localhost:3001` in your `.env` file.
+Make sure to set these in Vercel:
+- `REACT_APP_SUPABASE_URL` - Used by frontend
+- `REACT_APP_SUPABASE_ANON_KEY` - Used by frontend
+- `SUPABASE_URL` - Used by API routes
+- `SUPABASE_SERVICE_ROLE_KEY` - Used by API routes (admin operations)
 
 ## Troubleshooting
 
-### 404 Error
+### Build Fails
+- Check that all dependencies are in `package.json`
+- Verify Node.js version (Vercel uses Node 18 by default)
+- Check build logs in Vercel dashboard
 
-If you get a 404 error:
-1. Check that `vercel.json` is in the root directory
-2. Verify the build output directory is correct
-3. Make sure all environment variables are set in Vercel
-4. Check Vercel build logs for errors
+### API Routes Return 404
+- Ensure API files are in `api/` directory
+- Check that file names match route paths
+- Verify environment variables are set
 
-### API Connection Issues
-
-If the frontend can't connect to the backend:
-1. Ensure `REACT_APP_API_URL` is set correctly
-2. Check CORS settings on your backend
-3. Verify the backend is deployed and accessible
-4. Check browser console for CORS errors
-
-### Build Failures
-
-If the build fails:
-1. Check that all dependencies are in `client/package.json`
-2. Verify Node.js version compatibility
-3. Check Vercel build logs for specific errors
-4. Ensure `client/build` directory is being created
-
+### Frontend Can't Connect to API
+- API routes use relative paths (`/api/...`)
+- No need to set `REACT_APP_API_URL` - it's handled automatically
+- Check browser console for CORS errors

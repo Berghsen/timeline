@@ -3,6 +3,9 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
+# Vercel
+.vercel
+
 # Environment variables
 .env
 .env.local
@@ -13,6 +16,8 @@ client/.env
 server/.env
 
 # Build outputs
+build/
+dist/
 client/build/
 server/dist/
 
