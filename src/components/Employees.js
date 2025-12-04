@@ -99,11 +99,22 @@ const Employees = () => {
   };
 
   const fetchEmployeeEntries = async (employeeId) => {
+    if (!employeeId) {
+      console.error('No employee ID provided');
+      setTimeEntries([]);
+      return;
+    }
+
     setEntriesLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        console.error('No session found');
+        setTimeEntries([]);
+        return;
+      }
 
+      console.log('Fetching time entries for employee:', employeeId);
       const data = await apiFetch(`/api/admin/employees/${employeeId}/time-entries`, {
         method: 'GET',
         headers: {
@@ -111,10 +122,12 @@ const Employees = () => {
         },
       });
 
+      console.log('Fetched time entries:', data);
       setTimeEntries(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching time entries:', error);
       setTimeEntries([]);
+      // Don't show alert for time entries as it might be expected if employee has no entries
     } finally {
       setEntriesLoading(false);
     }
