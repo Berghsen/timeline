@@ -45,7 +45,9 @@ const Employees = () => {
         return;
       }
 
-      // Use relative path for Vercel, or API_URL if set (for local dev)
+      // For local dev: use proxy (package.json) or API_URL if set
+      // For Vercel: use relative path
+      // The proxy in package.json will forward /api/* to http://localhost:3001
       const url = API_URL ? `${API_URL}/api/admin/employees` : '/api/admin/employees';
       console.log('Fetching employees from:', url);
 
