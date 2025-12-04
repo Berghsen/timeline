@@ -119,7 +119,7 @@ const Employees = () => {
       }
 
       console.log('Fetching time entries for employee:', employeeId);
-      const data = await apiFetch(`/api/admin/employees/${employeeId}/time-entries`, {
+      const data = await apiFetch(`/api/admin/employees/time-entries?employeeId=${employeeId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -160,7 +160,7 @@ const Employees = () => {
         return;
       }
 
-      const updatedEmployee = await apiFetch(`/api/admin/employees/${selectedEmployee.id}/travel-time`, {
+      const updatedEmployee = await apiFetch(`/api/admin/employees/travel-time?employeeId=${selectedEmployee.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
