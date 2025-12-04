@@ -67,8 +67,12 @@ const Employees = () => {
 
   useEffect(() => {
     if (selectedEmployee) {
+      console.log('Selected employee changed, fetching entries for:', selectedEmployee.id, selectedEmployee.email);
       fetchEmployeeEntries(selectedEmployee.id);
       setTravelTime(selectedEmployee.travel_time_minutes || 0);
+    } else {
+      console.log('No employee selected, clearing entries');
+      setTimeEntries([]);
     }
   }, [selectedEmployee, currentWeekStart, currentMonth, currentYear]);
 
@@ -477,9 +481,16 @@ const Employees = () => {
               </div>
               
               {entriesLoading ? (
-                <div className="loading">Loading entries...</div>
+                <div className="loading">Items laden...</div>
               ) : timeEntries.length === 0 ? (
-                <div className="no-data">No time entries for this employee</div>
+                <div className="no-data">
+                  Geen tijditems voor deze medewerker
+                  {selectedEmployee && (
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
+                      (Employee ID: {selectedEmployee.id})
+                    </div>
+                  )}
+                </div>
               ) : (
                 <>
                   {viewMode === 'weekly' ? (

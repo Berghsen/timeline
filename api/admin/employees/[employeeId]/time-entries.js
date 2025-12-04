@@ -59,17 +59,34 @@ export default async function handler(req, res) {
     }
 
     // Get employeeId from query parameters (Vercel dynamic routes)
-    const { employeeId } = req.query;
+    // In Vercel, dynamic route params are in req.query
+    const employeeId = req.query.employeeId || req.query.id;
     
-    console.log('Request query:', req.query);
-    console.log('Employee ID:', employeeId);
+    console.log('Full request query:', JSON.stringify(req.query, null, 2));
+    console.log('Extracted Employee ID:', employeeId);
+    console.log('Request URL:', req.url);
+    console.log('Request method:', req.method);
 
     if (!employeeId) {
       console.error('No employeeId provided in request');
-      return res.status(400).json({ error: 'Employee ID is required' });
+      console.error('Available query keys:', Object.keys(req.query));
+      return res.status(400).json({ error: 'Employee ID is required', query: req.query });
     }
 
     // Get time entries for the employee
+    console.log('Querying time_entries table for user_id:', employeeId);
+    console.log('Employee ID type:', typeof employeeId);
+    
+    // First, let's check if there are ANY time entries in the table
+    const { data: allEntries, error: allError } = await supabase
+      .from('time_entries')
+      .select('user_id, id, date')
+      .limit(5);
+    
+    console.log('Sample time entries (first 5):', allEntries);
+    console.log('All entries error:', allError);
+    
+    // Now query for this specific employee
     const { data: entries, error } = await supabase
       .from('time_entries')
       .select('*')
@@ -77,11 +94,16 @@ export default async function handler(req, res) {
       .order('date', { ascending: false })
       .order('start_time', { ascending: false });
 
+    console.log('Supabase query result - entries found:', entries?.length || 0);
+    console.log('Supabase query result - entries:', entries);
+    console.log('Supabase query result - error:', error);
+
     if (error) {
       console.error('Error fetching time entries:', error);
       return res.status(500).json({ error: 'Failed to fetch time entries', details: error.message });
     }
 
+    console.log('Returning entries:', entries?.length || 0, 'entries');
     res.json(entries || []);
   } catch (error) {
     console.error('Error fetching employee time entries:', error);
