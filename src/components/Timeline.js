@@ -30,9 +30,7 @@ const Timeline = () => {
   const [endTime, setEndTime] = useState('');
   const [comment, setComment] = useState('');
   const [rechtstreeks, setRechtstreeks] = useState(false);
-  const [nietGewerkt, setNietGewerkt] = useState(false);
-  const [verlof, setVerlof] = useState(false);
-  const [ziek, setZiek] = useState(false);
+  const [status, setStatus] = useState(''); // 'niet_gewerkt', 'verlof', 'ziek', or ''
   const [recup, setRecup] = useState(false);
   const [bonnummer, setBonnummer] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -120,16 +118,26 @@ const Timeline = () => {
 
   const fetchMonthEntries = async () => {
     try {
-      const firstDay = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), 1);
-      const lastDay = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth() + 1, 0);
-      lastDay.setHours(23, 59, 59, 999);
+      const firstDay = new Date(currentYear, currentMonth, 1);
+      const lastDay = new Date(currentYear, currentMonth + 1, 0);
+      
+      // Format dates in local timezone
+      const firstYear = firstDay.getFullYear();
+      const firstMonth = String(firstDay.getMonth() + 1).padStart(2, '0');
+      const firstDayNum = String(firstDay.getDate()).padStart(2, '0');
+      const firstDayStr = `${firstYear}-${firstMonth}-${firstDayNum}`;
+      
+      const lastYear = lastDay.getFullYear();
+      const lastMonth = String(lastDay.getMonth() + 1).padStart(2, '0');
+      const lastDayNum = String(lastDay.getDate()).padStart(2, '0');
+      const lastDayStr = `${lastYear}-${lastMonth}-${lastDayNum}`;
 
       const { data, error } = await supabase
         .from('time_entries')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', firstDay.toISOString().split('T')[0])
-        .lte('date', lastDay.toISOString().split('T')[0])
+        .gte('date', firstDayStr)
+        .lte('date', lastDayStr)
         .order('date', { ascending: true });
 
       if (error) throw error;
@@ -170,10 +178,10 @@ const Timeline = () => {
     e.preventDefault();
     setError('');
 
-    // Time fields are optional - can be left empty
-    const hasStatus = nietGewerkt || verlof || ziek;
+    // Time fields are optional - can be left empty if status is selected
+    const hasStatus = status !== '';
     
-    // Only validate times if they are provided and no status is checked
+    // Only validate times if they are provided and no status is selected
     if (!hasStatus && startTime && endTime) {
       // Validate time order (end time after midnight is allowed, so we check differently)
       // This validation is handled in calculateDuration
@@ -192,9 +200,10 @@ const Timeline = () => {
         end_time: endTimeToUse || null,
         comment: comment || null,
         rechtstreeks: rechtstreeks || false,
-        niet_gewerkt: nietGewerkt || false,
-        verlof: verlof || false,
-        ziek: ziek || false,
+        niet_gewerkt: status === 'niet_gewerkt',
+        verlof: status === 'verlof',
+        ziek: status === 'ziek',
+        recup: status === 'recup',
       };
       
       // Add bonnummer if provided
@@ -447,9 +456,18 @@ const Timeline = () => {
       setEndTime(firstEntry.end_time || '');
       setComment(firstEntry.comment || '');
       setRechtstreeks(firstEntry.rechtstreeks || false);
-      setNietGewerkt(firstEntry.niet_gewerkt || false);
-      setVerlof(firstEntry.verlof || false);
-      setZiek(firstEntry.ziek || false);
+      // Set status dropdown based on entry
+      if (firstEntry.niet_gewerkt) {
+        setStatus('niet_gewerkt');
+      } else if (firstEntry.verlof) {
+        setStatus('verlof');
+      } else if (firstEntry.ziek) {
+        setStatus('ziek');
+      } else if (firstEntry.recup) {
+        setStatus('recup');
+      } else {
+        setStatus('');
+      }
       setBonnummer(firstEntry.bonnummer || '');
       setShowForm(true);
     } else {
@@ -541,7 +559,7 @@ const Timeline = () => {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  disabled={nietGewerkt || verlof || ziek}
+                  disabled={status !== ''}
                 />
               </div>
               <div className="form-group">
@@ -551,7 +569,7 @@ const Timeline = () => {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  disabled={nietGewerkt || verlof || ziek}
+                  disabled={status !== ''}
                 />
               </div>
             </div>
@@ -575,7 +593,7 @@ const Timeline = () => {
                 placeholder="bv: Permanentie 71"
               />
             </div>
-            <div className="form-group checkbox-group">
+            <div className="form-group">
               <label className="checkbox-label">
                 <input
                   type="checkbox"
@@ -584,30 +602,21 @@ const Timeline = () => {
                 />
                 <span>Rechtstreeks</span>
               </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={nietGewerkt}
-                  onChange={(e) => setNietGewerkt(e.target.checked)}
-                />
-                <span>Niet gewerkt</span>
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={verlof}
-                  onChange={(e) => setVerlof(e.target.checked)}
-                />
-                <span>Verlof</span>
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={ziek}
-                  onChange={(e) => setZiek(e.target.checked)}
-                />
-                <span>Ziek</span>
-              </label>
+            </div>
+            <div className="form-group">
+              <label htmlFor="status">Status</label>
+              <select
+                id="status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '4px', fontSize: '1rem' }}
+              >
+                <option value="">-- Selecteer status --</option>
+                <option value="niet_gewerkt">Niet gewerkt</option>
+                <option value="verlof">Verlof</option>
+                <option value="ziek">Ziek</option>
+                <option value="recup">Recup</option>
+              </select>
             </div>
             <div className="form-actions">
               <button type="submit" className="submit-button">
@@ -679,14 +688,40 @@ const Timeline = () => {
               <div className="stat-label">Totaal gewerkte uren in Week {getWeekNumber(currentWeekStart)}</div>
               <div className="stat-value">{Math.floor(getWeekTotal() / 60)}u {getWeekTotal() % 60}m</div>
             </div>
-            <div className="stat-card">
-              <div className="stat-label">Totaal gewerkte dagen in {getMonthStats().monthName}</div>
-              <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'dag' : 'dagen'}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Totaal gewerkte uren in {getMonthStats().monthName}</div>
-              <div className="stat-value">{Math.floor(getMonthStats().totalHours / 60)}u {getMonthStats().totalHours % 60}m</div>
-            </div>
+            {(() => {
+              // Get the month of the week being viewed
+              const weekMonth = currentWeekStart.getMonth();
+              const weekYear = currentWeekStart.getFullYear();
+              const weekMonthName = new Date(weekYear, weekMonth, 1).toLocaleDateString('nl-NL', { month: 'long' });
+              
+              // Calculate stats for the week's month
+              const weekMonthFirstDay = new Date(weekYear, weekMonth, 1);
+              const weekMonthLastDay = new Date(weekYear, weekMonth + 1, 0);
+              const weekMonthEntries = weekEntries.filter(entry => {
+                const entryDate = new Date(entry.date + 'T00:00:00');
+                return entryDate >= weekMonthFirstDay && entryDate <= weekMonthLastDay;
+              });
+              
+              const weekMonthMinutes = calculateTotalDuration(weekMonthEntries);
+              const weekMonthWorkedDays = new Set(
+                weekMonthEntries
+                  .filter(entry => !entry.niet_gewerkt && !entry.verlof && !entry.ziek && !entry.recup)
+                  .map(entry => entry.date)
+              ).size;
+              
+              return (
+                <>
+                  <div className="stat-card">
+                    <div className="stat-label">Totaal gewerkte dagen in {weekMonthName}</div>
+                    <div className="stat-value">{weekMonthWorkedDays} {weekMonthWorkedDays === 1 ? 'dag' : 'dagen'}</div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-label">Totaal gewerkte uren in {weekMonthName}</div>
+                    <div className="stat-value">{Math.floor(weekMonthMinutes / 60)}u {weekMonthMinutes % 60}m</div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
           <div className="week-calendar">
             {getWeekDates().map((date, index) => {
@@ -701,6 +736,7 @@ const Timeline = () => {
                 (firstEntry.verlof ? 'status-verlof' : 
                  firstEntry.ziek ? 'status-ziek' : 
                  firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                 firstEntry.recup ? 'status-recup' : 
                  'status-gewerkt') : '';
 
               return (
@@ -718,10 +754,11 @@ const Timeline = () => {
                       <>
                         {(() => {
                           const firstEntry = dateEntries[0];
-                          const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek;
+                          const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
                           const statusClass = firstEntry.verlof ? 'status-verlof' : 
                                             firstEntry.ziek ? 'status-ziek' : 
                                             firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                                            firstEntry.recup ? 'status-recup' : 
                                             'status-gewerkt';
                           
                           return (
@@ -730,6 +767,7 @@ const Timeline = () => {
                                 {firstEntry.verlof ? 'Verlof' : 
                                  firstEntry.ziek ? 'Ziek' : 
                                  firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
+                                 firstEntry.recup ? 'Recup' : 
                                  firstEntry.start_time && firstEntry.end_time ? 
                                    `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
                                    'Gewerkt'}
@@ -816,6 +854,7 @@ const Timeline = () => {
                 (firstEntry.verlof ? 'status-verlof' : 
                  firstEntry.ziek ? 'status-ziek' : 
                  firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                 firstEntry.recup ? 'status-recup' : 
                  'status-gewerkt') : '';
 
               return (
@@ -832,7 +871,7 @@ const Timeline = () => {
                     {dateEntries.length > 0 ? (
                       <>
                         {(() => {
-                          const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek;
+                          const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
                           
                           return (
                             <>

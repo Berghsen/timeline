@@ -789,6 +789,11 @@
   color: #854d0e;
 }
 
+.day-status.status-recup {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
 .day-entry-preview {
   display: flex;
   flex-direction: column;

@@ -349,11 +349,19 @@ const Employees = () => {
       return entryDate >= firstDay && entryDate <= lastDay;
     });
     
-    const uniqueDays = new Set(monthEntries.map(entry => entry.date)).size;
-    const monthName = new Date(currentYear, currentMonth, 1).toLocaleDateString('en-US', { month: 'long' });
+    // Only count days that have actual work (not niet_gewerkt, verlof, ziek, or recup)
+    const workedDays = new Set(
+      monthEntries
+        .filter(entry => {
+          // Exclude days with status selected
+          return !entry.niet_gewerkt && !entry.verlof && !entry.ziek && !entry.recup;
+        })
+        .map(entry => entry.date)
+    ).size;
+    const monthName = new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long' });
     
     return {
-      totalDays: uniqueDays,
+      totalDays: workedDays,
       monthName: monthName
     };
   };
@@ -513,11 +521,18 @@ const Employees = () => {
                           const isCurrentDay = isToday(date);
 
                           const dateStr = formatDateLocal(date);
+                          const firstEntry = dateEntries.length > 0 ? dateEntries[0] : null;
+                          const statusClass = firstEntry ? 
+                            (firstEntry.verlof ? 'status-verlof' : 
+                             firstEntry.ziek ? 'status-ziek' : 
+                             firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                             firstEntry.recup ? 'status-recup' : 
+                             'status-gewerkt') : '';
 
                           return (
                             <div 
                               key={index} 
-                              className={`calendar-day ${isCurrentDay ? 'today' : ''} ${dateEntries.length > 0 ? 'clickable' : ''}`}
+                              className={`calendar-day ${isCurrentDay ? 'today' : ''} ${dateEntries.length > 0 ? 'clickable' : ''} ${statusClass}`}
                               onClick={() => dateEntries.length > 0 && setSelectedDate(dateStr)}
                             >
                               <div className="day-header">
@@ -528,12 +543,7 @@ const Employees = () => {
                                 {dateEntries.length > 0 ? (
                                   <>
                                     {(() => {
-                                      const firstEntry = dateEntries[0];
-                                      const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek;
-                                      const statusClass = firstEntry.verlof ? 'status-verlof' : 
-                                                        firstEntry.ziek ? 'status-ziek' : 
-                                                        firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
-                                                        'status-gewerkt';
+                                      const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
                                       
                                       return (
                                         <>
@@ -541,6 +551,7 @@ const Employees = () => {
                                             {firstEntry.verlof ? 'Verlof' : 
                                              firstEntry.ziek ? 'Ziek' : 
                                              firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
+                                             firstEntry.recup ? 'Recup' : 
                                              firstEntry.start_time && firstEntry.end_time ? 
                                                `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
                                                'Gewerkt'}
