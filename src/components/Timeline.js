@@ -575,44 +575,38 @@ const Timeline = () => {
                 placeholder="bv: Permanentie 71"
               />
             </div>
-            <div className="form-group">
+            <div className="form-group checkbox-group">
               <label className="checkbox-label">
                 <input
                   type="checkbox"
                   checked={rechtstreeks}
                   onChange={(e) => setRechtstreeks(e.target.checked)}
                 />
-                Rechtstreeks
+                <span>Rechtstreeks</span>
               </label>
-            </div>
-            <div className="form-group">
               <label className="checkbox-label">
                 <input
                   type="checkbox"
                   checked={nietGewerkt}
                   onChange={(e) => setNietGewerkt(e.target.checked)}
                 />
-                Niet gewerkt
+                <span>Niet gewerkt</span>
               </label>
-            </div>
-            <div className="form-group">
               <label className="checkbox-label">
                 <input
                   type="checkbox"
                   checked={verlof}
                   onChange={(e) => setVerlof(e.target.checked)}
                 />
-                Verlof
+                <span>Verlof</span>
               </label>
-            </div>
-            <div className="form-group">
               <label className="checkbox-label">
                 <input
                   type="checkbox"
                   checked={ziek}
                   onChange={(e) => setZiek(e.target.checked)}
                 />
-                Ziek
+                <span>Ziek</span>
               </label>
             </div>
             <div className="form-actions">

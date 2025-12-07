@@ -95,11 +95,11 @@ app.get('/api/admin/employees', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Admin access required' });
     }
 
-    // Get all employees - using service role key so RLS is bypassed
+    // Get all employees (non-admin users) - using service role key so RLS is bypassed
     let { data: employees, error } = await supabase
       .from('user_profiles')
-      .select('id, email, full_name, travel_time_minutes, created_at')
-      .eq('role', 'employee')
+      .select('id, email, full_name, travel_time_minutes, role, created_at')
+      .neq('role', 'admin')
       .order('created_at', { ascending: false });
 
     // If travel_time_minutes column doesn't exist, the query will fail
@@ -107,8 +107,8 @@ app.get('/api/admin/employees', async (req, res) => {
     if (error && error.message && error.message.includes('travel_time_minutes')) {
       const { data: employeesBasic, error: basicError } = await supabase
         .from('user_profiles')
-        .select('id, email, full_name, created_at')
-        .eq('role', 'employee')
+        .select('id, email, full_name, role, created_at')
+        .neq('role', 'admin')
         .order('created_at', { ascending: false });
       
       if (!basicError && employeesBasic) {
