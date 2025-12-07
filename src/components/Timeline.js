@@ -30,10 +30,7 @@ const Timeline = () => {
   const [endTime, setEndTime] = useState('');
   const [comment, setComment] = useState('');
   const [rechtstreeks, setRechtstreeks] = useState(false);
-  const [nietGewerkt, setNietGewerkt] = useState(false);
-  const [verlof, setVerlof] = useState(false);
-  const [ziek, setZiek] = useState(false);
-  const [recup, setRecup] = useState(false);
+  const [status, setStatus] = useState(''); // 'niet_gewerkt', 'verlof', 'ziek', 'recup', or ''
   const [bonnummer, setBonnummer] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
@@ -100,14 +97,17 @@ const Timeline = () => {
     try {
       const weekEnd = new Date(currentWeekStart);
       weekEnd.setDate(weekEnd.getDate() + 6);
-      weekEnd.setHours(23, 59, 59, 999);
+      
+      // Format dates in local timezone to avoid timezone issues
+      const weekStartStr = formatDateLocal(currentWeekStart);
+      const weekEndStr = formatDateLocal(weekEnd);
 
       const { data, error } = await supabase
         .from('time_entries')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', currentWeekStart.toISOString().split('T')[0])
-        .lte('date', weekEnd.toISOString().split('T')[0])
+        .gte('date', weekStartStr)
+        .lte('date', weekEndStr)
         .order('date', { ascending: true })
         .order('start_time', { ascending: true });
 
@@ -155,10 +155,18 @@ const Timeline = () => {
     setEndTime(entry.end_time || '');
     setComment(entry.comment || '');
     setRechtstreeks(entry.rechtstreeks || false);
-    setNietGewerkt(entry.niet_gewerkt || false);
-    setVerlof(entry.verlof || false);
-    setZiek(entry.ziek || false);
-    setRecup(entry.recup || false);
+    // Set status dropdown based on entry
+    if (entry.niet_gewerkt) {
+      setStatus('niet_gewerkt');
+    } else if (entry.verlof) {
+      setStatus('verlof');
+    } else if (entry.ziek) {
+      setStatus('ziek');
+    } else if (entry.recup) {
+      setStatus('recup');
+    } else {
+      setStatus('');
+    }
     setBonnummer(entry.bonnummer || '');
     setSelectedDate(entry.date);
     setShowForm(true);
@@ -170,10 +178,7 @@ const Timeline = () => {
     setEndTime('');
     setComment('');
     setRechtstreeks(false);
-    setNietGewerkt(false);
-    setVerlof(false);
-    setZiek(false);
-    setRecup(false);
+    setStatus('');
     setBonnummer('');
     setShowForm(false);
   };
@@ -183,7 +188,7 @@ const Timeline = () => {
     setError('');
 
     // Time fields are optional - can be left empty if status is selected
-    const hasStatus = nietGewerkt || verlof || ziek || recup;
+    const hasStatus = status !== '';
     
     // Only validate times if they are provided and no status is selected
     if (!hasStatus && startTime && endTime) {
@@ -204,10 +209,10 @@ const Timeline = () => {
         end_time: endTimeToUse || null,
         comment: comment || null,
         rechtstreeks: rechtstreeks || false,
-        niet_gewerkt: nietGewerkt || false,
-        verlof: verlof || false,
-        ziek: ziek || false,
-        recup: recup || false,
+        niet_gewerkt: status === 'niet_gewerkt',
+        verlof: status === 'verlof',
+        ziek: status === 'ziek',
+        recup: status === 'recup',
       };
       
       // Add bonnummer if provided
@@ -460,11 +465,18 @@ const Timeline = () => {
       setEndTime(firstEntry.end_time || '');
       setComment(firstEntry.comment || '');
       setRechtstreeks(firstEntry.rechtstreeks || false);
-      // Set status checkboxes based on entry
-      setNietGewerkt(firstEntry.niet_gewerkt || false);
-      setVerlof(firstEntry.verlof || false);
-      setZiek(firstEntry.ziek || false);
-      setRecup(firstEntry.recup || false);
+      // Set status dropdown based on entry
+      if (firstEntry.niet_gewerkt) {
+        setStatus('niet_gewerkt');
+      } else if (firstEntry.verlof) {
+        setStatus('verlof');
+      } else if (firstEntry.ziek) {
+        setStatus('ziek');
+      } else if (firstEntry.recup) {
+        setStatus('recup');
+      } else {
+        setStatus('');
+      }
       setBonnummer(firstEntry.bonnummer || '');
       setShowForm(true);
     } else {
@@ -476,10 +488,7 @@ const Timeline = () => {
       setEndTime('');
       setComment('');
       setRechtstreeks(false);
-      setNietGewerkt(false);
-      setVerlof(false);
-      setZiek(false);
-      setRecup(false);
+      setStatus('');
       setBonnummer('');
     }
   };
@@ -491,10 +500,7 @@ const Timeline = () => {
     setEndTime('');
     setComment('');
     setRechtstreeks(false);
-    setNietGewerkt(false);
-    setVerlof(false);
-    setZiek(false);
-    setRecup(false);
+    setStatus('');
     setBonnummer('');
     setSelectedDate(formatDateLocal(new Date()));
   };
@@ -558,7 +564,7 @@ const Timeline = () => {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  disabled={nietGewerkt || verlof || ziek || recup}
+                  disabled={status !== ''}
                 />
               </div>
               <div className="form-group">
@@ -568,7 +574,7 @@ const Timeline = () => {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  disabled={nietGewerkt || verlof || ziek || recup}
+                  disabled={status !== ''}
                 />
               </div>
             </div>
@@ -592,83 +598,32 @@ const Timeline = () => {
                 placeholder="bv: Permanentie 71"
               />
             </div>
-            <div className="form-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={rechtstreeks}
-                  onChange={(e) => setRechtstreeks(e.target.checked)}
-                />
-                <span>Rechtstreeks</span>
-              </label>
-            </div>
-            <div className="form-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={nietGewerkt}
-                  onChange={(e) => {
-                    setNietGewerkt(e.target.checked);
-                    if (e.target.checked) {
-                      setVerlof(false);
-                      setZiek(false);
-                      setRecup(false);
-                    }
-                  }}
-                />
-                <span>Niet gewerkt</span>
-              </label>
-            </div>
-            <div className="form-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={verlof}
-                  onChange={(e) => {
-                    setVerlof(e.target.checked);
-                    if (e.target.checked) {
-                      setNietGewerkt(false);
-                      setZiek(false);
-                      setRecup(false);
-                    }
-                  }}
-                />
-                <span>Verlof</span>
-              </label>
-            </div>
-            <div className="form-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={ziek}
-                  onChange={(e) => {
-                    setZiek(e.target.checked);
-                    if (e.target.checked) {
-                      setNietGewerkt(false);
-                      setVerlof(false);
-                      setRecup(false);
-                    }
-                  }}
-                />
-                <span>Ziek</span>
-              </label>
-            </div>
-            <div className="form-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={recup}
-                  onChange={(e) => {
-                    setRecup(e.target.checked);
-                    if (e.target.checked) {
-                      setNietGewerkt(false);
-                      setVerlof(false);
-                      setZiek(false);
-                    }
-                  }}
-                />
-                <span>Recup</span>
-              </label>
+            <div className="form-group status-row">
+              <div className="status-dropdown-wrapper">
+                <label htmlFor="status">Status</label>
+                <select
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '4px', fontSize: '1rem' }}
+                >
+                  <option value="">Niet gewerkt</option>
+                  <option value="niet_gewerkt">Niet gewerkt</option>
+                  <option value="verlof">Verlof</option>
+                  <option value="ziek">Ziek</option>
+                  <option value="recup">Recup</option>
+                </select>
+              </div>
+              <div className="rechtstreeks-checkbox-wrapper">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={rechtstreeks}
+                    onChange={(e) => setRechtstreeks(e.target.checked)}
+                  />
+                  <span>Rechtstreeks</span>
+                </label>
+              </div>
             </div>
             <div className="form-actions">
               <button type="submit" className="submit-button">
@@ -880,9 +835,6 @@ const Timeline = () => {
           <div className="month-title">
             {new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}
           </div>
-          <div className="month-total">
-            Totaal: {Math.floor(getMonthStats().totalHours / 60)}u {getMonthStats().totalHours % 60}m
-          </div>
           <div className="statistics-section">
             <div className="stat-card">
               <div className="stat-label">Totaal gewerkte dagen in {getMonthStats().monthName}</div>
@@ -958,14 +910,6 @@ const Timeline = () => {
 
       {viewMode === 'monthly' && (
         <div className="timeline-entries-section">
-          <div className="entries-header">
-            <h2>Alle Items</h2>
-            {allEntries.length > 0 && (
-              <div className="total-summary">
-                Totaal: {Math.floor(calculateTotalDuration(allEntries) / 60)}u {calculateTotalDuration(allEntries) % 60}m ({allEntries.length} items)
-              </div>
-            )}
-          </div>
           {loading ? (
             <div className="loading">Items laden...</div>
           ) : allEntries.length === 0 ? (

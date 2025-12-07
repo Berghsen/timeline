@@ -7,11 +7,13 @@ ADD COLUMN IF NOT EXISTS bonnummer TEXT;
 ALTER TABLE time_entries
 DROP COLUMN IF EXISTS niet_gewerkt,
 DROP COLUMN IF EXISTS verlof,
-DROP COLUMN IF EXISTS ziek;
+DROP COLUMN IF EXISTS ziek,
+DROP COLUMN IF EXISTS recup; -- Drop recup if it exists as text
 
 -- Add them back as boolean
 ALTER TABLE time_entries
 ADD COLUMN IF NOT EXISTS niet_gewerkt BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS verlof BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS ziek BOOLEAN DEFAULT false;
+ADD COLUMN IF NOT EXISTS ziek BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS recup BOOLEAN DEFAULT false; -- Add recup as boolean
 

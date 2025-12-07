@@ -52,7 +52,16 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
         </button>
       </nav>
       <div className="sidebar-footer">
-        <button className="sign-out-button" onClick={onSignOut}>
+        <button 
+          className="sign-out-button" 
+          onClick={async () => {
+            try {
+              await onSignOut();
+            } catch (error) {
+              console.error('Error signing out:', error);
+            }
+          }}
+        >
           Uitloggen
         </button>
       </div>
