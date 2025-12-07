@@ -175,13 +175,10 @@ const Timeline = () => {
     }
 
     // Handle end time after midnight (e.g., 16:00 to 02:00 = 10 hours)
+    // The database TIME field can't store values > 24:00, so we store the actual time
+    // We'll calculate duration correctly in display by checking if end < start
+    // No need to modify endTime - store it as entered (e.g., "02:00" not "26:00")
     let endTimeToUse = endTime;
-    if (startTime >= endTime) {
-      // End time is next day, add 24 hours
-      const [endHours, endMinutes] = endTime.split(':').map(Number);
-      const adjustedHours = String(endHours + 24).padStart(2, '0');
-      endTimeToUse = `${adjustedHours}:${String(endMinutes).padStart(2, '0')}`;
-    }
 
     try {
       // Build data object
@@ -492,27 +489,6 @@ const Timeline = () => {
 
   return (
     <div className="timeline-container">
-      <div className="timeline-header">
-        <h1>Tijdlijn</h1>
-        <div className="view-mode-toggle">
-          <button
-            className={`view-mode-btn ${viewMode === 'weekly' ? 'active' : ''}`}
-            onClick={() => setViewMode('weekly')}
-          >
-            Week
-          </button>
-          <button
-            className={`view-mode-btn ${viewMode === 'monthly' ? 'active' : ''}`}
-            onClick={() => setViewMode('monthly')}
-          >
-            Maand
-          </button>
-        </div>
-      </div>
-
-      <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
-        +
-      </button>
 
       {showForm && (
         <div className="entry-modal-overlay" onClick={handleCancel}>
@@ -564,7 +540,7 @@ const Timeline = () => {
                 type="text"
                 value={bonnummer}
                 onChange={(e) => setBonnummer(e.target.value)}
-                placeholder="Bonnummer..."
+                placeholder="bv: 2251922"
               />
             </div>
             <div className="form-group">
@@ -574,7 +550,7 @@ const Timeline = () => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows="2"
-                placeholder="Optionele notitie over uw werk..."
+                placeholder="bv: Permanentie 71"
               />
             </div>
             <div className="form-group">
@@ -674,6 +650,9 @@ const Timeline = () => {
                 Volgende Week →
               </button>
             </div>
+            <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
+              +
+            </button>
           </div>
           <div className="week-title">{getWeekTitle()}</div>
           <div className="week-total">
@@ -742,8 +721,19 @@ const Timeline = () => {
       ) : (
         <div className="monthly-overview-section">
           <div className="monthly-header">
-            <div className="month-title">
-              {new Date(currentYear, currentMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            <div className="view-mode-toggle">
+              <button
+                className={`view-mode-btn ${viewMode === 'weekly' ? 'active' : ''}`}
+                onClick={() => setViewMode('weekly')}
+              >
+                Week
+              </button>
+              <button
+                className={`view-mode-btn ${viewMode === 'monthly' ? 'active' : ''}`}
+                onClick={() => setViewMode('monthly')}
+              >
+                Maand
+              </button>
             </div>
             <div className="month-navigation">
               <button onClick={() => navigateMonth(-1)} className="nav-button">
@@ -756,8 +746,17 @@ const Timeline = () => {
                 Volgende Maand →
               </button>
             </div>
+            <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
+              +
+            </button>
           </div>
-          <div className="month-stats">
+          <div className="month-title">
+            {new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}
+          </div>
+          <div className="month-total">
+            Totaal: {Math.floor(getMonthStats().totalHours / 60)}u {getMonthStats().totalHours % 60}m
+          </div>
+          <div className="statistics-section">
             <div className="stat-card">
               <div className="stat-label">Totaal gewerkte dagen in {getMonthStats().monthName}</div>
               <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'dag' : 'dagen'}</div>

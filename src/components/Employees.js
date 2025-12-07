@@ -526,7 +526,16 @@ const Employees = () => {
                                     )}
                                     <div className="day-entry-preview">
                                       {dateEntries.slice(0, 3).map((entry, idx) => (
-                                        <div key={idx} className="preview-entry">
+                                        <div 
+                                          key={idx} 
+                                          className="preview-entry"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            // Show this specific entry in detail modal
+                                            setSelectedDate(dateStr);
+                                          }}
+                                          style={{ cursor: 'pointer' }}
+                                        >
                                           {entry.start_time.substring(0, 5)} - {entry.end_time.substring(0, 5)}
                                           {entry.comment && <span className="preview-comment-icon" title={entry.comment}>💬</span>}
                                         </div>
