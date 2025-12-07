@@ -684,10 +684,18 @@ const Employees = () => {
                           const isCurrentDay = isToday(date);
                           const dateStr = formatDateLocal(date);
 
+                          const firstEntryForClass = dateEntries.length > 0 ? dateEntries[0] : null;
+                          const dayStatusClass = firstEntryForClass ? 
+                            (firstEntryForClass.verlof ? 'status-verlof' : 
+                             firstEntryForClass.ziek ? 'status-ziek' : 
+                             firstEntryForClass.niet_gewerkt ? 'status-niet-gewerkt' : 
+                             firstEntryForClass.recup ? 'status-recup' : 
+                             'status-gewerkt') : '';
+                          
                           return (
                             <div 
                               key={index} 
-                              className={`month-calendar-day ${isCurrentDay ? 'today' : ''} ${dateEntries.length > 0 ? 'has-entries clickable' : ''}`}
+                              className={`month-calendar-day ${isCurrentDay ? 'today' : ''} ${dateEntries.length > 0 ? 'has-entries clickable' : ''} ${dayStatusClass}`}
                               onClick={() => dateEntries.length > 0 && setSelectedDate(dateStr)}
                             >
                               <div className="day-header">
@@ -699,10 +707,11 @@ const Employees = () => {
                                   <>
                                     {(() => {
                                       const firstEntry = dateEntries[0];
-                                      const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek;
+                                      const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
                                       const statusClass = firstEntry.verlof ? 'status-verlof' : 
                                                         firstEntry.ziek ? 'status-ziek' : 
                                                         firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                                                        firstEntry.recup ? 'status-recup' : 
                                                         'status-gewerkt';
                                       
                                       return (
@@ -711,6 +720,7 @@ const Employees = () => {
                                             {firstEntry.verlof ? 'Verlof' : 
                                              firstEntry.ziek ? 'Ziek' : 
                                              firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
+                                             firstEntry.recup ? 'Recup' : 
                                              firstEntry.start_time && firstEntry.end_time ? 
                                                `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
                                                'Gewerkt'}

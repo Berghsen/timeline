@@ -697,9 +697,34 @@
   border-color: #fde047;
 }
 
+.month-calendar-day.status-recup {
+  background: #faf5ff;
+  border-color: #c084fc;
+}
+
 .month-calendar-day.today {
   border-color: #667eea;
   background: #e3f2fd;
+}
+
+.month-calendar-day.today.status-verlof {
+  background: #eff6ff;
+  border-color: #667eea;
+}
+
+.month-calendar-day.today.status-ziek {
+  background: #fef2f2;
+  border-color: #667eea;
+}
+
+.month-calendar-day.today.status-niet-gewerkt {
+  background: #fefce8;
+  border-color: #667eea;
+}
+
+.month-calendar-day.today.status-recup {
+  background: #faf5ff;
+  border-color: #667eea;
 }
 
 .month-calendar-day.has-entries {
@@ -894,6 +919,150 @@
   .week-totals,
   .month-totals {
     grid-template-columns: 1fr;
+  }
+
+  .month-calendar {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .month-calendar-day {
+    min-height: 80px;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .day-header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .day-name {
+    font-size: 0.7rem;
+  }
+
+  .day-number {
+    font-size: 0.9rem;
+  }
+
+  .day-status {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.4rem;
+    margin: 0.15rem 0;
+  }
+
+  .day-total {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .employees-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .month-calendar {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .month-calendar-day {
+    min-height: 90px;
+    padding: 0.625rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .day-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .day-name {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+
+  .day-number {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .day-entries {
+    gap: 0.375rem;
+  }
+
+  .day-status {
+    font-size: 0.7rem;
+    padding: 0.375rem 0.5rem;
+    margin: 0.2rem 0;
+    border-radius: 4px;
+  }
+
+  .day-total {
+    font-size: 0.7rem;
+    margin: 0.15rem 0;
+  }
+
+  .day-empty {
+    font-size: 0.7rem;
+    margin-top: 0.5rem;
+  }
+
+  .monthly-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .month-navigation {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .nav-button {
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  .month-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .month-calendar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .month-calendar-day {
+    min-height: 100px;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .day-header {
+    margin-bottom: 0.625rem;
+  }
+
+  .day-name {
+    font-size: 0.65rem;
+  }
+
+  .day-number {
+    font-size: 1.1rem;
+  }
+
+  .day-status {
+    font-size: 0.65rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .day-total {
+    font-size: 0.65rem;
   }
 }
 
