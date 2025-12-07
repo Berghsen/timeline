@@ -962,51 +962,6 @@ const Timeline = () => {
           </div>
         </div>
       )}
-                      {dateEntries.map((entry) => (
-                        <div key={entry.id} className="entry-card">
-                          <div className="entry-header">
-                            <div className="entry-time">
-                              {entry.start_time} - {entry.end_time}
-                            </div>
-                            <div className="entry-duration">
-                              {calculateDuration(entry.start_time, entry.end_time)}
-                            </div>
-                          </div>
-                          {entry.comment && (
-                            <div className="entry-comment">{entry.comment}</div>
-                          )}
-                          <div className="entry-actions">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(entry);
-                              }}
-                              className="edit-button"
-                            >
-                              Bewerken
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(entry.id);
-                              }}
-                              className="delete-button"
-                            >
-                              Verwijderen
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
