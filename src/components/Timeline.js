@@ -30,9 +30,10 @@ const Timeline = () => {
   const [endTime, setEndTime] = useState('');
   const [comment, setComment] = useState('');
   const [rechtstreeks, setRechtstreeks] = useState(false);
-  const [nietGewerkt, setNietGewerkt] = useState('');
-  const [verlof, setVerlof] = useState('');
-  const [ziek, setZiek] = useState('');
+  const [nietGewerkt, setNietGewerkt] = useState(false);
+  const [verlof, setVerlof] = useState(false);
+  const [ziek, setZiek] = useState(false);
+  const [bonnummer, setBonnummer] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -143,9 +144,10 @@ const Timeline = () => {
     setEndTime(entry.end_time);
     setComment(entry.comment || '');
     setRechtstreeks(entry.rechtstreeks || false);
-    setNietGewerkt(entry.niet_gewerkt || '');
-    setVerlof(entry.verlof || '');
-    setZiek(entry.ziek || '');
+    setNietGewerkt(entry.niet_gewerkt || false);
+    setVerlof(entry.verlof || false);
+    setZiek(entry.ziek || false);
+    setBonnummer(entry.bonnummer || '');
     setSelectedDate(entry.date);
     setShowForm(true);
   };
@@ -156,9 +158,10 @@ const Timeline = () => {
     setEndTime('');
     setComment('');
     setRechtstreeks(false);
-    setNietGewerkt('');
-    setVerlof('');
-    setZiek('');
+    setNietGewerkt(false);
+    setVerlof(false);
+    setZiek(false);
+    setBonnummer('');
     setShowForm(false);
   };
 
@@ -171,25 +174,37 @@ const Timeline = () => {
       return;
     }
 
+    // Handle end time after midnight (e.g., 16:00 to 02:00 = 10 hours)
+    let endTimeToUse = endTime;
     if (startTime >= endTime) {
-      setError('Eindtijd moet na starttijd zijn');
-      return;
+      // End time is next day, add 24 hours
+      const [endHours, endMinutes] = endTime.split(':').map(Number);
+      const adjustedHours = String(endHours + 24).padStart(2, '0');
+      endTimeToUse = `${adjustedHours}:${String(endMinutes).padStart(2, '0')}`;
     }
 
     try {
+      // Build data object
+      const data = {
+        start_time: startTime,
+        end_time: endTimeToUse,
+        comment: comment || null,
+        rechtstreeks: rechtstreeks || false,
+        niet_gewerkt: nietGewerkt || false,
+        verlof: verlof || false,
+        ziek: ziek || false,
+      };
+      
+      // Add bonnummer if provided
+      if (bonnummer) {
+        data.bonnummer = bonnummer;
+      }
+
       if (editingId) {
         // Update existing entry
         const { error } = await supabase
           .from('time_entries')
-          .update({
-            start_time: startTime,
-            end_time: endTime,
-            comment: comment || null,
-            rechtstreeks: rechtstreeks,
-            niet_gewerkt: nietGewerkt || null,
-            verlof: verlof || null,
-            ziek: ziek || null,
-          })
+          .update(data)
           .eq('id', editingId)
           .eq('user_id', user.id);
 
@@ -199,15 +214,9 @@ const Timeline = () => {
         const { error } = await supabase
           .from('time_entries')
           .insert({
+            ...data,
             user_id: user.id,
             date: selectedDate,
-            start_time: startTime,
-            end_time: endTime,
-            comment: comment || null,
-            rechtstreeks: rechtstreeks,
-            niet_gewerkt: nietGewerkt || null,
-            verlof: verlof || null,
-            ziek: ziek || null,
           });
 
         if (error) throw error;
@@ -262,8 +271,14 @@ const Timeline = () => {
     return entries.reduce((total, entry) => {
       const startParts = entry.start_time.split(':').map(Number);
       const endParts = entry.end_time.split(':').map(Number);
-      const startMinutes = startParts[0] * 60 + startParts[1];
-      const endMinutes = endParts[0] * 60 + endParts[1];
+      let startMinutes = startParts[0] * 60 + startParts[1];
+      let endMinutes = endParts[0] * 60 + endParts[1];
+      
+      // Handle end time after midnight
+      if (endMinutes <= startMinutes) {
+        endMinutes += 24 * 60; // Add 24 hours
+      }
+      
       return total + (endMinutes - startMinutes);
     }, 0);
   };
@@ -413,9 +428,10 @@ const Timeline = () => {
       setEndTime(firstEntry.end_time);
       setComment(firstEntry.comment || '');
       setRechtstreeks(firstEntry.rechtstreeks || false);
-      setNietGewerkt(firstEntry.niet_gewerkt || '');
-      setVerlof(firstEntry.verlof || '');
-      setZiek(firstEntry.ziek || '');
+      setNietGewerkt(firstEntry.niet_gewerkt || false);
+      setVerlof(firstEntry.verlof || false);
+      setZiek(firstEntry.ziek || false);
+      setBonnummer(firstEntry.bonnummer || '');
       setShowForm(true);
     } else {
       // If no entries, create a new one
@@ -426,23 +442,25 @@ const Timeline = () => {
       setEndTime('');
       setComment('');
       setRechtstreeks(false);
-      setNietGewerkt('');
-      setVerlof('');
-      setZiek('');
+      setNietGewerkt(false);
+      setVerlof(false);
+      setZiek(false);
+      setBonnummer('');
     }
   };
 
   const handleAddNew = () => {
     setShowForm(true);
     setEditingId(null);
-    setStartTime('');
-    setEndTime('');
-    setComment('');
-    setRechtstreeks(false);
-    setNietGewerkt('');
-    setVerlof('');
-    setZiek('');
-    setSelectedDate(formatDateLocal(new Date()));
+      setStartTime('');
+      setEndTime('');
+      setComment('');
+      setRechtstreeks(false);
+      setNietGewerkt(false);
+      setVerlof(false);
+      setZiek(false);
+      setBonnummer('');
+      setSelectedDate(formatDateLocal(new Date()));
   };
 
   const getEntriesForDate = (date) => {
@@ -540,12 +558,22 @@ const Timeline = () => {
               </div>
             </div>
             <div className="form-group">
+              <label htmlFor="bonnummer">Bonnummer</label>
+              <input
+                id="bonnummer"
+                type="text"
+                value={bonnummer}
+                onChange={(e) => setBonnummer(e.target.value)}
+                placeholder="Bonnummer..."
+              />
+            </div>
+            <div className="form-group">
               <label htmlFor="comment">Opmerking</label>
               <textarea
                 id="comment"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                rows="3"
+                rows="2"
                 placeholder="Optionele notitie over uw werk..."
               />
             </div>
@@ -560,34 +588,34 @@ const Timeline = () => {
               </label>
             </div>
             <div className="form-group">
-              <label htmlFor="nietGewerkt">Niet gewerkt</label>
-              <input
-                id="nietGewerkt"
-                type="text"
-                value={nietGewerkt}
-                onChange={(e) => setNietGewerkt(e.target.value)}
-                placeholder="Reden waarom niet gewerkt..."
-              />
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={nietGewerkt}
+                  onChange={(e) => setNietGewerkt(e.target.checked)}
+                />
+                Niet gewerkt
+              </label>
             </div>
             <div className="form-group">
-              <label htmlFor="verlof">Verlof</label>
-              <input
-                id="verlof"
-                type="text"
-                value={verlof}
-                onChange={(e) => setVerlof(e.target.value)}
-                placeholder="Type verlof..."
-              />
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={verlof}
+                  onChange={(e) => setVerlof(e.target.checked)}
+                />
+                Verlof
+              </label>
             </div>
             <div className="form-group">
-              <label htmlFor="ziek">Ziek</label>
-              <input
-                id="ziek"
-                type="text"
-                value={ziek}
-                onChange={(e) => setZiek(e.target.value)}
-                placeholder="Ziekte informatie..."
-              />
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={ziek}
+                  onChange={(e) => setZiek(e.target.checked)}
+                />
+                Ziek
+              </label>
             </div>
             <div className="form-actions">
               <button type="submit" className="submit-button">
@@ -604,6 +632,7 @@ const Timeline = () => {
                   }} 
                   className="delete-button-form"
                   title="Verwijderen"
+                  style={{ background: 'none', border: 'none', padding: 0, fontSize: '1.2rem', cursor: 'pointer', color: '#000' }}
                 >
                   🗑️
                 </button>
@@ -620,21 +649,35 @@ const Timeline = () => {
       {viewMode === 'weekly' ? (
         <div className="weekly-overview-section">
           <div className="weekly-header">
-            <div className="week-title">{getWeekTitle()}</div>
+            <div className="view-mode-toggle">
+              <button
+                className={`view-mode-btn ${viewMode === 'weekly' ? 'active' : ''}`}
+                onClick={() => setViewMode('weekly')}
+              >
+                Week
+              </button>
+              <button
+                className={`view-mode-btn ${viewMode === 'monthly' ? 'active' : ''}`}
+                onClick={() => setViewMode('monthly')}
+              >
+                Maand
+              </button>
+            </div>
             <div className="week-navigation">
               <button onClick={() => navigateWeek(-1)} className="nav-button">
-                ← Previous Week
+                ← Vorige Week
               </button>
               <button onClick={goToCurrentWeek} className="nav-button today">
-                Current Week
+                Huidige Week
               </button>
               <button onClick={() => navigateWeek(1)} className="nav-button">
-                Next Week →
+                Volgende Week →
               </button>
             </div>
           </div>
+          <div className="week-title">{getWeekTitle()}</div>
           <div className="week-total">
-            Total: {Math.floor(getWeekTotal() / 60)}h {getWeekTotal() % 60}m
+            Totaal: {Math.floor(getWeekTotal() / 60)}u {getWeekTotal() % 60}m
           </div>
           <div className="statistics-section">
             <div className="stat-card">

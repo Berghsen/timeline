@@ -657,8 +657,13 @@ const Employees = () => {
               {timeEntries.filter(entry => entry.date === selectedDate).map((entry) => {
                 const startParts = entry.start_time.split(':').map(Number);
                 const endParts = entry.end_time.split(':').map(Number);
-                const startMinutes = startParts[0] * 60 + startParts[1];
-                const endMinutes = endParts[0] * 60 + endParts[1];
+                let startMinutes = startParts[0] * 60 + startParts[1];
+                let endMinutes = endParts[0] * 60 + endParts[1];
+                
+                // Handle end time after midnight
+                if (endMinutes <= startMinutes) {
+                  endMinutes += 24 * 60;
+                }
                 const duration = endMinutes - startMinutes;
 
                 return (
@@ -671,36 +676,9 @@ const Employees = () => {
                         {Math.floor(duration / 60)}u {duration % 60}m
                       </div>
                     </div>
-                    {entry.rechtstreeks && (
-                      <div className="detail-rechtstreeks" style={{ 
-                        background: '#e6ffed', 
-                        padding: '0.5rem', 
-                        borderRadius: '4px', 
-                        marginTop: '0.5rem',
-                        color: '#22543d',
-                        fontWeight: '500'
-                      }}>
-                        ✓ Rechtstreeks
-                      </div>
-                    )}
-                    {entry.comment && (
-                      <div className="detail-comment">
-                        <strong>Opmerking:</strong> {entry.comment}
-                      </div>
-                    )}
-                    {entry.niet_gewerkt && (
+                    {entry.bonnummer && (
                       <div className="detail-field">
-                        <strong>Niet gewerkt:</strong> {entry.niet_gewerkt}
-                      </div>
-                    )}
-                    {entry.verlof && (
-                      <div className="detail-field">
-                        <strong>Verlof:</strong> {entry.verlof}
-                      </div>
-                    )}
-                    {entry.ziek && (
-                      <div className="detail-field">
-                        <strong>Ziek:</strong> {entry.ziek}
+                        <strong>Bonnummer:</strong> {entry.bonnummer}
                       </div>
                     )}
                     {entry.rechtstreeks && (
@@ -722,17 +700,17 @@ const Employees = () => {
                     )}
                     {entry.niet_gewerkt && (
                       <div className="detail-field">
-                        <strong>Niet gewerkt:</strong> {entry.niet_gewerkt}
+                        <strong>Niet gewerkt</strong>
                       </div>
                     )}
                     {entry.verlof && (
                       <div className="detail-field">
-                        <strong>Verlof:</strong> {entry.verlof}
+                        <strong>Verlof</strong>
                       </div>
                     )}
                     {entry.ziek && (
                       <div className="detail-field">
-                        <strong>Ziek:</strong> {entry.ziek}
+                        <strong>Ziek</strong>
                       </div>
                     )}
                     <div className="detail-meta">

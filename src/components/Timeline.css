@@ -230,19 +230,17 @@
 }
 
 .delete-button-form {
-  background: #fee;
-  color: #c33;
-  border: 1px solid #fcc;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 1rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1.2rem;
   cursor: pointer;
+  color: #000;
   transition: all 0.2s;
 }
 
 .delete-button-form:hover {
-  background: #fdd;
-  border-color: #f99;
+  opacity: 0.7;
 }
 
 .cancel-button {
@@ -481,11 +479,17 @@
 
 .weekly-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.weekly-header .view-mode-toggle {
+  align-self: flex-start;
+}
+
+.weekly-header .week-navigation {
+  align-self: flex-start;
 }
 
 .weekly-header h2 {
