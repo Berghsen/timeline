@@ -45,7 +45,7 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
     try {
       let query = supabase
         .from('absence_certificates')
-        .select('*, user_profiles(full_name, email)')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (isAdmin && selectedEmployee) {
@@ -55,7 +55,7 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
       }
       // If admin and no employee selected, fetch all (RLS will handle permissions)
 
-      const { data, error } = await query;
+      const { data: certificatesData, error } = await query;
 
       if (error) {
         console.error('Error fetching certificates:', error);
@@ -63,8 +63,33 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
         return;
       }
       
-      console.log('Fetched certificates:', data);
-      setCertificates(data || []);
+      // Fetch user profiles separately for admin view
+      if (isAdmin && certificatesData && certificatesData.length > 0) {
+        const userIds = [...new Set(certificatesData.map(cert => cert.user_id))];
+        const { data: profilesData } = await supabase
+          .from('user_profiles')
+          .select('id, full_name, email')
+          .in('id', userIds);
+        
+        // Map profiles to certificates
+        const profilesMap = {};
+        if (profilesData) {
+          profilesData.forEach(profile => {
+            profilesMap[profile.id] = profile;
+          });
+        }
+        
+        const certificatesWithProfiles = certificatesData.map(cert => ({
+          ...cert,
+          user_profiles: profilesMap[cert.user_id] || null
+        }));
+        
+        console.log('Fetched certificates:', certificatesWithProfiles);
+        setCertificates(certificatesWithProfiles);
+      } else {
+        console.log('Fetched certificates:', certificatesData);
+        setCertificates(certificatesData || []);
+      }
     } catch (err) {
       console.error('Error fetching certificates:', err);
       alert(`Fout bij het laden van attesten: ${err.message}`);
