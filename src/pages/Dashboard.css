@@ -14,9 +14,9 @@
   transition: filter 0.3s ease;
 }
 
+/* Remove shadow effect when modal is open - modal overlay provides its own backdrop */
 .dashboard-content.modal-open {
-  filter: brightness(0.7);
-  /* Don't disable pointer events - let the modal overlay handle it */
+  /* No filter needed - modal overlay handles the darkening */
 }
 
 .mobile-menu-button {

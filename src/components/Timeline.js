@@ -52,31 +52,21 @@ const Timeline = () => {
     }
   }, [selectedDate, viewMode, currentWeekStart, currentMonth, currentYear]);
 
-  // Prevent body scroll when modal is open and add shadow to dashboard
+  // Prevent body scroll when modal is open
   useEffect(() => {
-    const dashboardContent = document.querySelector('.dashboard-content');
     if (showForm) {
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
-      if (dashboardContent) {
-        dashboardContent.classList.add('modal-open');
-      }
     } else {
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
-      if (dashboardContent) {
-        dashboardContent.classList.remove('modal-open');
-      }
     }
     return () => {
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
-      if (dashboardContent) {
-        dashboardContent.classList.remove('modal-open');
-      }
     };
   }, [showForm]);
 
