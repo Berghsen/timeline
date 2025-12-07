@@ -169,9 +169,17 @@ const Timeline = () => {
     e.preventDefault();
     setError('');
 
-    if (!startTime || !endTime) {
+    // If niet_gewerkt, verlof, or ziek is checked, start/end time is optional
+    const hasStatus = nietGewerkt || verlof || ziek;
+    
+    if (!hasStatus && (!startTime || !endTime)) {
       setError('Vul zowel start- als eindtijd in');
       return;
+    }
+    
+    if (!hasStatus && startTime >= endTime && startTime && endTime) {
+      // Only validate time order if we have times and no status checkbox
+      // (end time after midnight is allowed)
     }
 
     // Handle end time after midnight (e.g., 16:00 to 02:00 = 10 hours)
@@ -183,8 +191,8 @@ const Timeline = () => {
     try {
       // Build data object
       const data = {
-        start_time: startTime,
-        end_time: endTimeToUse,
+        start_time: hasStatus ? null : startTime,
+        end_time: hasStatus ? null : endTimeToUse,
         comment: comment || null,
         rechtstreeks: rechtstreeks || false,
         niet_gewerkt: nietGewerkt || false,
@@ -513,23 +521,25 @@ const Timeline = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="startTime">Starttijd</label>
+                <label htmlFor="startTime">Starttijd {nietGewerkt || verlof || ziek ? '(optioneel)' : ''}</label>
                 <input
                   id="startTime"
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  required
+                  required={!nietGewerkt && !verlof && !ziek}
+                  disabled={nietGewerkt || verlof || ziek}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="endTime">Eindtijd</label>
+                <label htmlFor="endTime">Eindtijd {nietGewerkt || verlof || ziek ? '(optioneel)' : ''}</label>
                 <input
                   id="endTime"
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  required
+                  required={!nietGewerkt && !verlof && !ziek}
+                  disabled={nietGewerkt || verlof || ziek}
                 />
               </div>
             </div>
@@ -676,15 +686,21 @@ const Timeline = () => {
             {getWeekDates().map((date, index) => {
               const dateEntries = getEntriesForDate(date);
               const totalMinutes = getTotalForDate(date);
-              const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+              const dayName = date.toLocaleDateString('nl-NL', { weekday: 'short' });
               const dayNumber = date.getDate();
               const isCurrentDay = isToday(date);
               const isSelectedDay = isSelected(date);
+              const firstEntry = dateEntries.length > 0 ? dateEntries[0] : null;
+              const statusClass = firstEntry ? 
+                (firstEntry.verlof ? 'status-verlof' : 
+                 firstEntry.ziek ? 'status-ziek' : 
+                 firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                 'status-gewerkt') : '';
 
               return (
                 <div
                   key={index}
-                  className={`calendar-day ${isCurrentDay ? 'today' : ''} ${isSelectedDay ? 'selected' : ''} clickable`}
+                  className={`calendar-day ${isCurrentDay ? 'today' : ''} ${isSelectedDay ? 'selected' : ''} ${statusClass} clickable`}
                   onClick={() => handleDateClick(date)}
                 >
                   <div className="day-header">
@@ -694,23 +710,38 @@ const Timeline = () => {
                   <div className="day-entries">
                     {dateEntries.length > 0 ? (
                       <>
-                        <div className="day-entry-count">{dateEntries.length} {dateEntries.length === 1 ? 'item' : 'items'}</div>
-                        <div className="day-total">
-                          {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
-                        </div>
-                        <div className="day-entry-preview">
-                          {dateEntries.slice(0, 2).map((entry, idx) => (
-                            <div key={idx} className="preview-entry">
-                              {entry.start_time.substring(0, 5)} - {entry.end_time.substring(0, 5)}
-                            </div>
-                          ))}
-                          {dateEntries.length > 2 && (
-                            <div className="preview-more">+{dateEntries.length - 2} more</div>
-                          )}
-                        </div>
+                        {(() => {
+                          const firstEntry = dateEntries[0];
+                          const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek;
+                          const statusClass = firstEntry.verlof ? 'status-verlof' : 
+                                            firstEntry.ziek ? 'status-ziek' : 
+                                            firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                                            'status-gewerkt';
+                          
+                          return (
+                            <>
+                              <div className={`day-status ${statusClass}`}>
+                                {firstEntry.verlof ? 'Verlof' : 
+                                 firstEntry.ziek ? 'Ziek' : 
+                                 firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
+                                 firstEntry.start_time && firstEntry.end_time ? 
+                                   `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
+                                   'Gewerkt'}
+                              </div>
+                              {!hasStatus && (
+                                <div className="day-total">
+                                  {Math.floor(totalMinutes / 60)}u {totalMinutes % 60}m
+                                </div>
+                              )}
+                              {dateEntries.length > 1 && (
+                                <div className="day-entry-count">{dateEntries.length} items</div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </>
                     ) : (
-                      <div className="day-empty">Tik om toe te voegen</div>
+                      <div className="day-empty">Klik om toe te voegen</div>
                     )}
                   </div>
                 </div>
@@ -770,14 +801,21 @@ const Timeline = () => {
             {getMonthDates().map((date, index) => {
               const dateEntries = getEntriesForDate(date);
               const totalMinutes = getTotalForDate(date);
-              const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+              const dayName = date.toLocaleDateString('nl-NL', { weekday: 'short' });
               const dayNumber = date.getDate();
               const isCurrentDay = isToday(date);
+
+              const firstEntry = dateEntries.length > 0 ? dateEntries[0] : null;
+              const statusClass = firstEntry ? 
+                (firstEntry.verlof ? 'status-verlof' : 
+                 firstEntry.ziek ? 'status-ziek' : 
+                 firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                 'status-gewerkt') : '';
 
               return (
                 <div
                   key={index}
-                  className={`month-calendar-day ${isCurrentDay ? 'today' : ''} ${dateEntries.length > 0 ? 'has-entries' : ''} clickable`}
+                  className={`month-calendar-day ${isCurrentDay ? 'today' : ''} ${dateEntries.length > 0 ? 'has-entries' : ''} ${statusClass} clickable`}
                   onClick={() => handleDateClick(date)}
                 >
                   <div className="day-header">
@@ -787,10 +825,27 @@ const Timeline = () => {
                   <div className="day-entries">
                     {dateEntries.length > 0 ? (
                       <>
-                        <div className="day-entry-count">{dateEntries.length}</div>
-                        <div className="day-total">
-                          {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
-                        </div>
+                        {(() => {
+                          const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek;
+                          
+                          return (
+                            <>
+                              <div className={`day-status ${statusClass}`}>
+                                {firstEntry.verlof ? 'Verlof' : 
+                                 firstEntry.ziek ? 'Ziek' : 
+                                 firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
+                                 firstEntry.start_time && firstEntry.end_time ? 
+                                   `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
+                                   'Gewerkt'}
+                              </div>
+                              {!hasStatus && (
+                                <div className="day-total">
+                                  {Math.floor(totalMinutes / 60)}u {totalMinutes % 60}m
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </>
                     ) : (
                       <div className="day-empty">-</div>

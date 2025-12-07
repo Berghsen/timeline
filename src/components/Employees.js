@@ -450,32 +450,23 @@ const Employees = () => {
                         <div className="week-title">{getWeekTitle()}</div>
                         <div className="week-navigation">
                           <button onClick={() => navigateWeek(-1)} className="nav-button">
-                            ← Previous Week
+                            ← Vorige Week
                           </button>
                           <button onClick={goToCurrentWeek} className="nav-button today">
-                            Current Week
+                            Huidige Week
                           </button>
                           <button onClick={() => navigateWeek(1)} className="nav-button">
-                            Next Week →
+                            Volgende Week →
                           </button>
                         </div>
                       </div>
                       <div className="week-totals">
                         <div className="total-item">
-                          <span className="total-label">Hours worked (incl travel time):</span>
+                          <span className="total-label">Gewerkte uren deze week:</span>
                           <span className="total-value">
                             {(() => {
                               const totals = getWeekTotals();
-                              return `${Math.floor(totals.total / 60)}h ${totals.total % 60}m`;
-                            })()}
-                          </span>
-                        </div>
-                        <div className="total-item">
-                          <span className="total-label">Hours worked (excl travel time):</span>
-                          <span className="total-value">
-                            {(() => {
-                              const totals = getWeekTotals();
-                              return `${Math.floor(totals.afterTravel / 60)}h ${totals.afterTravel % 60}m`;
+                              return `${Math.floor(totals.total / 60)}u ${totals.total % 60}m`;
                             })()}
                           </span>
                         </div>
@@ -510,43 +501,48 @@ const Employees = () => {
                               <div className="day-entries">
                                 {dateEntries.length > 0 ? (
                                   <>
-                                    <div className="day-entry-count">{dateEntries.length} {dateEntries.length === 1 ? 'item' : 'items'}</div>
-                                    <div className="day-total">
-                                      {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
-                                    </div>
-                                    {dateEntries.some(e => e.rechtstreeks) && (
-                                      <div className="rechtstreeks-indicator" style={{ 
-                                        fontSize: '0.7rem', 
-                                        color: '#22543d', 
-                                        marginTop: '0.25rem',
-                                        fontWeight: '500'
-                                      }}>
-                                        ✓ Rechtstreeks
-                                      </div>
-                                    )}
-                                    <div className="day-entry-preview">
-                                      {dateEntries.slice(0, 3).map((entry, idx) => (
-                                        <div 
-                                          key={idx} 
-                                          className="preview-entry"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            // Show this specific entry in detail modal
-                                            setSelectedDate(dateStr);
-                                          }}
-                                          style={{ cursor: 'pointer' }}
-                                        >
-                                          {entry.start_time.substring(0, 5)} - {entry.end_time.substring(0, 5)}
-                                          {entry.comment && <span className="preview-comment-icon" title={entry.comment}>💬</span>}
-                                        </div>
-                                      ))}
-                                      {dateEntries.length > 3 && (
-                                        <div className="preview-more">+{dateEntries.length - 3} meer</div>
-                                      )}
-                                    </div>
+                                    {(() => {
+                                      const firstEntry = dateEntries[0];
+                                      const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek;
+                                      const statusClass = firstEntry.verlof ? 'status-verlof' : 
+                                                        firstEntry.ziek ? 'status-ziek' : 
+                                                        firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                                                        'status-gewerkt';
+                                      
+                                      return (
+                                        <>
+                                          <div className={`day-status ${statusClass}`}>
+                                            {firstEntry.verlof ? 'Verlof' : 
+                                             firstEntry.ziek ? 'Ziek' : 
+                                             firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
+                                             firstEntry.start_time && firstEntry.end_time ? 
+                                               `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
+                                               'Gewerkt'}
+                                          </div>
+                                          {!hasStatus && (
+                                            <div className="day-total">
+                                              {Math.floor(totalMinutes / 60)}u {totalMinutes % 60}m
+                                            </div>
+                                          )}
+                                          {dateEntries.some(e => e.rechtstreeks) && (
+                                            <div className="rechtstreeks-indicator" style={{ 
+                                              fontSize: '0.7rem', 
+                                              color: '#22543d', 
+                                              marginTop: '0.25rem',
+                                              fontWeight: '500'
+                                            }}>
+                                              ✓ Rechtstreeks
+                                            </div>
+                                          )}
+                                          {dateEntries.length > 1 && (
+                                            <div className="day-entry-count">{dateEntries.length} items</div>
+                                          )}
+                                        </>
+                                      );
+                                    })()}
                                   </>
                                 ) : (
-                                  <div className="day-empty">No entries</div>
+                                  <div className="day-empty">Geen items</div>
                                 )}
                               </div>
                             </div>
@@ -619,20 +615,42 @@ const Employees = () => {
                               <div className="day-entries">
                                 {dateEntries.length > 0 ? (
                                   <>
-                                    <div className="day-entry-count">{dateEntries.length} {dateEntries.length === 1 ? 'item' : 'items'}</div>
-                                    <div className="day-total">
-                                      {Math.floor(netMinutes / 60)}h {netMinutes % 60}m
-                                    </div>
-                                    {dateEntries.some(e => e.rechtstreeks) && (
-                                      <div className="rechtstreeks-indicator" style={{ 
-                                        fontSize: '0.7rem', 
-                                        color: '#22543d', 
-                                        marginTop: '0.25rem',
-                                        fontWeight: '500'
-                                      }}>
-                                        ✓ Rechtstreeks
-                                      </div>
-                                    )}
+                                    {(() => {
+                                      const firstEntry = dateEntries[0];
+                                      const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek;
+                                      const statusClass = firstEntry.verlof ? 'status-verlof' : 
+                                                        firstEntry.ziek ? 'status-ziek' : 
+                                                        firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                                                        'status-gewerkt';
+                                      
+                                      return (
+                                        <>
+                                          <div className={`day-status ${statusClass}`}>
+                                            {firstEntry.verlof ? 'Verlof' : 
+                                             firstEntry.ziek ? 'Ziek' : 
+                                             firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
+                                             firstEntry.start_time && firstEntry.end_time ? 
+                                               `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
+                                               'Gewerkt'}
+                                          </div>
+                                          {!hasStatus && (
+                                            <div className="day-total">
+                                              {Math.floor(netMinutes / 60)}u {netMinutes % 60}m
+                                            </div>
+                                          )}
+                                          {dateEntries.some(e => e.rechtstreeks) && (
+                                            <div className="rechtstreeks-indicator" style={{ 
+                                              fontSize: '0.7rem', 
+                                              color: '#22543d', 
+                                              marginTop: '0.25rem',
+                                              fontWeight: '500'
+                                            }}>
+                                              ✓ Rechtstreeks
+                                            </div>
+                                          )}
+                                        </>
+                                      );
+                                    })()}
                                   </>
                                 ) : (
                                   <div className="day-empty">-</div>
