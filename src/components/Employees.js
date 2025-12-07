@@ -289,8 +289,16 @@ const Employees = () => {
     setCurrentWeekStart(new Date(monday.setHours(0, 0, 0, 0)));
   };
 
+  // Helper function to format date in local timezone (fixes timezone bug)
+  const formatDateLocal = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const getEntriesForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     return timeEntries.filter(entry => entry.date === dateStr);
   };
 
@@ -504,13 +512,6 @@ const Employees = () => {
                           const dayNumber = date.getDate();
                           const isCurrentDay = isToday(date);
 
-                          // Helper function to format date in local timezone
-                          const formatDateLocal = (date) => {
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                          };
                           const dateStr = formatDateLocal(date);
 
                           return (
@@ -614,18 +615,24 @@ const Employees = () => {
                         {getMonthDates().map((date, index) => {
                           const dateEntries = getEntriesForDate(date);
                           const rawTotal = dateEntries.reduce((total, entry) => {
+                            if (!entry.start_time || !entry.end_time) {
+                              return total;
+                            }
                             const startParts = entry.start_time.split(':').map(Number);
                             const endParts = entry.end_time.split(':').map(Number);
                             const startMinutes = startParts[0] * 60 + startParts[1];
                             const endMinutes = endParts[0] * 60 + endParts[1];
-                            return total + (endMinutes - startMinutes);
+                            let duration = endMinutes - startMinutes;
+                            if (duration <= 0) {
+                              duration += 24 * 60;
+                            }
+                            return total + duration;
                           }, 0);
-                          const travelDeduction = dateEntries.length > 0 ? (selectedEmployee?.travel_time_minutes || 0) : 0;
-                          const netMinutes = Math.max(0, rawTotal - travelDeduction);
+                          const netMinutes = rawTotal;
                           const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
                           const dayNumber = date.getDate();
                           const isCurrentDay = isToday(date);
-                          const dateStr = date.toISOString().split('T')[0];
+                          const dateStr = formatDateLocal(date);
 
                           return (
                             <div 

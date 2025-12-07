@@ -32,9 +32,6 @@ const AdminDashboard = () => {
         {activePage === 'employees' && <Employees />}
         {activePage === 'settings' && <Settings />}
       </div>
-      <footer className="app-footer">
-        Made with ❤️ by Thomas
-      </footer>
       {sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>
       )}

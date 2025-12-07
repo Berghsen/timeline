@@ -23,7 +23,9 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
         <h2>Tijdregistratie</h2>
         <div className="user-info">
           <div className="user-name">{user?.profile?.full_name || user?.email}</div>
-          <div className="user-role">{isAdmin ? 'Beheerder' : 'Medewerker'}</div>
+          <div className="user-role">
+            {isAdmin ? 'Beheerder' : (user?.profile?.role || 'Medewerker')}
+          </div>
         </div>
       </div>
       <nav className="sidebar-nav">
