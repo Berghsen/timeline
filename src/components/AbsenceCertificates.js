@@ -53,13 +53,21 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
       } else if (!isAdmin) {
         query = query.eq('user_id', user.id);
       }
+      // If admin and no employee selected, fetch all (RLS will handle permissions)
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching certificates:', error);
+        alert(`Fout bij het laden van attesten: ${error.message}`);
+        return;
+      }
+      
+      console.log('Fetched certificates:', data);
       setCertificates(data || []);
     } catch (err) {
       console.error('Error fetching certificates:', err);
+      alert(`Fout bij het laden van attesten: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -133,7 +141,7 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
         .getPublicUrl(fileName);
 
       // Insert certificate record
-      const { error: insertError } = await supabase
+      const { data: insertData, error: insertError } = await supabase
         .from('absence_certificates')
         .insert({
           user_id: user.id,
@@ -143,9 +151,15 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
           file_url: urlData.publicUrl,
           file_name: selectedFile.name,
           file_type: selectedFile.type
-        });
+        })
+        .select();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
+      
+      console.log('Certificate inserted:', insertData);
 
       // Reset form
       setStartDate('');
@@ -218,14 +232,23 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
     <div className="absence-certificates-container">
       <div className="absence-certificates-header">
         <h1>Afwezigheidsattesten</h1>
-        {!isAdmin && (
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <button
-            className="upload-button"
-            onClick={() => setShowUploadForm(!showUploadForm)}
+            className="refresh-button"
+            onClick={fetchCertificates}
+            style={{ padding: '0.5rem 1rem', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer' }}
           >
-            {showUploadForm ? 'Annuleren' : '+ Nieuw Attest Uploaden'}
+            🔄 Verversen
           </button>
-        )}
+          {!isAdmin && (
+            <button
+              className="upload-button"
+              onClick={() => setShowUploadForm(!showUploadForm)}
+            >
+              {showUploadForm ? 'Annuleren' : '+ Nieuw Attest Uploaden'}
+            </button>
+          )}
+        </div>
       </div>
 
       {isAdmin && (
@@ -324,7 +347,9 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
         </div>
       ) : (
         <div className="certificates-list">
-          {certificates.map((cert) => (
+          {certificates.map((cert) => {
+            console.log('Rendering certificate:', cert);
+            return (
             <div key={cert.id} className="certificate-card">
               <div className="certificate-header">
                 <div className="certificate-info">
@@ -368,7 +393,8 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
                 </a>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
