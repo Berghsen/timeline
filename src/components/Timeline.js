@@ -605,9 +605,9 @@ const Timeline = () => {
                   id="status"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '4px', fontSize: '1rem' }}
+                  className="status-select"
                 >
-                  <option value="">Niet gewerkt</option>
+                  <option value="">Geen status</option>
                   <option value="niet_gewerkt">Niet gewerkt</option>
                   <option value="verlof">Verlof</option>
                   <option value="ziek">Ziek</option>

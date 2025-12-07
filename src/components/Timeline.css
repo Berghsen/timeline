@@ -11,6 +11,7 @@
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
+  position: relative;
 }
 
 .timeline-header {
@@ -215,6 +216,44 @@
   min-width: 200px;
 }
 
+.status-dropdown-wrapper label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.status-select {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.3s;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  background-size: 12px;
+  padding-right: 2.25rem;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #4a5568;
+  box-shadow: 0 0 0 3px rgba(74, 85, 104, 0.1);
+}
+
+.status-select:hover {
+  border-color: #bbb;
+}
+
 .rechtstreeks-checkbox-wrapper {
   display: flex;
   align-items: center;
@@ -230,15 +269,16 @@
   margin-bottom: 0.5rem;
   color: #333;
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.625rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-family: inherit;
   transition: border-color 0.3s;
 }
@@ -266,19 +306,24 @@
   margin-top: 1.5rem;
   padding-top: 1rem;
   border-top: 1px solid #eee;
+  flex-wrap: wrap;
 }
 
 .entry-modal-content .form-actions {
-  margin-top: 1.5rem;
+  margin-top: auto;
   padding-top: 1.5rem;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 10;
 }
 
 .submit-button,
 .cancel-button {
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border: none;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;
@@ -358,10 +403,12 @@
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 1rem;
+  align-items: flex-start;
+  z-index: 998;
+  padding: 0;
   animation: fadeIn 0.2s;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes fadeIn {
@@ -375,14 +422,20 @@
 
 .entry-modal-content {
   background: white;
-  padding: 2rem;
+  padding: 1.25rem;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  max-width: 900px;
+  max-width: 600px;
   width: 90%;
-  max-height: 95vh;
+  margin: 2rem auto;
+  max-height: 85vh;
   overflow-y: auto;
   animation: slideUp 0.3s;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
 }
 
 @keyframes slideUp {
@@ -408,7 +461,7 @@
 .form-header h2 {
   margin: 0;
   color: #333;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 
 .close-form-button {
@@ -889,15 +942,17 @@
 
 @media (max-width: 768px) {
   .timeline-container {
-    padding: 0.75rem;
-    margin: 0.5rem;
-    border-radius: 12px;
+    padding: 0.5rem;
+    margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
   }
 
   .timeline-header {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: stretch;
+    margin-bottom: 1rem;
   }
 
   .view-mode-toggle {
@@ -907,36 +962,40 @@
 
   .view-mode-btn {
     flex: 1;
-    padding: 0.75rem 0.5rem;
-    font-size: 0.85rem;
+    padding: 0.625rem 0.5rem;
+    font-size: 0.875rem;
   }
 
   .timeline-form-section,
   .timeline-entries-section {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .weekly-overview-section,
   .monthly-overview-section {
-    padding: 1rem;
-    margin-top: 1.5rem;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    border-radius: 8px;
   }
 
   .week-navigation {
     flex-direction: column;
     gap: 0.5rem;
+    width: 100%;
   }
 
   .nav-button {
     width: 100%;
     padding: 0.75rem;
     font-size: 0.9rem;
+    box-sizing: border-box;
   }
 
   .week-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
     text-align: center;
     margin: 0.5rem 0;
+    padding: 0.5rem;
   }
 
   .week-calendar {
@@ -950,62 +1009,109 @@
   }
 
   .calendar-day {
-    padding: 0.75rem 0.5rem;
+    padding: 0.625rem 0.5rem;
     font-size: 0.85rem;
+    min-height: auto;
   }
 
   .day-number {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .day-status {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
   }
 
   .day-total {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
+  /* Modal Mobile Styles */
   .entry-modal-overlay {
-    padding: 0.5rem;
+    padding: 0;
+    align-items: flex-start;
+    overflow-y: auto;
   }
 
   .entry-modal-content {
     max-width: 100%;
     width: 100%;
-    max-height: 95vh;
+    min-height: 100vh;
+    max-height: none;
     padding: 1rem;
     margin: 0;
-    border-radius: 8px;
+    border-radius: 0;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .form-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .close-form-button {
+    width: 36px;
+    height: 36px;
+    font-size: 1.5rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .entry-modal-content form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 
   .entry-modal-content .form-row {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
   }
 
   .status-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
   }
 
   .status-dropdown-wrapper {
-    min-width: 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .status-select {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.75rem;
+    padding-right: 2.5rem;
+    box-sizing: border-box;
   }
 
   .rechtstreeks-checkbox-wrapper {
+    width: 100%;
     padding-bottom: 0;
   }
 
   .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
   }
 
   .form-group label {
     font-size: 0.9rem;
+    margin-bottom: 0.375rem;
   }
 
   .form-group input,
@@ -1013,30 +1119,55 @@
   .form-group select {
     font-size: 1rem;
     padding: 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 60px;
   }
 
   .checkbox-label {
     font-size: 0.9rem;
-    padding: 0.5rem;
+    padding: 0.5rem 0;
+  }
+
+  .entry-modal-content .form-actions {
+    margin-top: auto;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-top: 2px solid #eee;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    z-index: 10;
+    flex-shrink: 0;
   }
 
   .form-actions {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    width: 100%;
   }
 
   .submit-button,
-  .delete-button {
+  .cancel-button,
+  .delete-button-form {
     width: 100%;
-    padding: 0.875rem;
+    padding: 1rem;
     font-size: 1rem;
+    font-weight: 600;
+    box-sizing: border-box;
+    min-height: 48px;
   }
 
   .add-entry-button {
     width: 100%;
-    padding: 0.875rem;
+    padding: 1rem;
     font-size: 1.5rem;
     margin-top: 0.5rem;
+    min-height: 48px;
   }
 
   .month-header {
@@ -1047,50 +1178,30 @@
   .month-navigation {
     flex-direction: column;
     gap: 0.5rem;
+    width: 100%;
   }
 
   .month-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     text-align: center;
-  }
-
-  .month-total {
-    font-size: 0.9rem;
-    text-align: center;
+    padding: 0.5rem;
   }
 
   .statistics-section {
+    grid-template-columns: 1fr;
     gap: 0.75rem;
   }
 
   .stat-card {
-    padding: 1rem;
-  }
-
-  .stat-label {
-    font-size: 0.85rem;
-  }
-
-  .stat-value {
-    font-size: 1.1rem;
-  }
-
-  .month-totals {
     padding: 0.75rem;
   }
 
-  .total-item {
-    flex-direction: column;
-    gap: 0.25rem;
-    text-align: center;
+  .stat-label {
+    font-size: 0.8rem;
   }
 
-  .total-label {
-    font-size: 0.85rem;
-  }
-
-  .total-value {
-    font-size: 1.1rem;
+  .stat-value {
+    font-size: 1rem;
   }
 }
 

@@ -324,9 +324,14 @@ const Employees = () => {
   const getWeekTotals = () => {
     const weekEnd = new Date(currentWeekStart);
     weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    // Format dates in local timezone to avoid timezone issues
+    const weekStartStr = formatDateLocal(currentWeekStart);
+    const weekEndStr = formatDateLocal(weekEnd);
+    
     const weekEntries = timeEntries.filter(entry => {
-      const entryDate = new Date(entry.date);
-      return entryDate >= currentWeekStart && entryDate <= weekEnd;
+      // Compare date strings directly to avoid timezone issues
+      return entry.date >= weekStartStr && entry.date <= weekEndStr;
     });
     return calculateHoursWithTravelTime(weekEntries);
   };
