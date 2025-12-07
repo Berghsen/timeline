@@ -30,19 +30,35 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
       </div>
       <nav className="sidebar-nav">
         {isAdmin ? (
-          <button
-            className={`nav-item ${activePage === 'employees' ? 'active' : ''}`}
-            onClick={() => handleNavClick('employees')}
-          >
-            Medewerkers
-          </button>
+          <>
+            <button
+              className={`nav-item ${activePage === 'employees' ? 'active' : ''}`}
+              onClick={() => handleNavClick('employees')}
+            >
+              Tijdregistraties
+            </button>
+            <button
+              className={`nav-item ${activePage === 'absence-certificates' ? 'active' : ''}`}
+              onClick={() => handleNavClick('absence-certificates')}
+            >
+              Afwezigheidsattesten
+            </button>
+          </>
         ) : (
-          <button
-            className={`nav-item ${activePage === 'timeline' ? 'active' : ''}`}
-            onClick={() => handleNavClick('timeline')}
-          >
-            Tijdlijn
-          </button>
+          <>
+            <button
+              className={`nav-item ${activePage === 'timeline' ? 'active' : ''}`}
+              onClick={() => handleNavClick('timeline')}
+            >
+              Tijdlijn
+            </button>
+            <button
+              className={`nav-item ${activePage === 'absence-certificates' ? 'active' : ''}`}
+              onClick={() => handleNavClick('absence-certificates')}
+            >
+              Afwezigheidsattesten
+            </button>
+          </>
         )}
         <button
           className={`nav-item ${activePage === 'settings' ? 'active' : ''}`}

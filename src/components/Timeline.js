@@ -962,28 +962,6 @@ const Timeline = () => {
           </div>
         </div>
       )}
-
-
-      {viewMode === 'monthly' && (
-        <div className="timeline-entries-section">
-          {loading ? (
-            <div className="loading">Items laden...</div>
-          ) : allEntries.length === 0 ? (
-            <div className="no-entries">Geen items gevonden</div>
-          ) : (
-            <div className="all-entries-list">
-              {Object.keys(groupedEntries).sort((a, b) => b.localeCompare(a)).map((date) => {
-                const dateEntries = groupedEntries[date];
-                const dateTotal = calculateTotalDuration(dateEntries);
-                return (
-                  <div key={date} className="date-group">
-                    <div className="date-group-header">
-                      <h3>{new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
-                      <div className="date-group-total">
-                        {Math.floor(dateTotal / 60)}u {dateTotal % 60}m ({dateEntries.length} {dateEntries.length === 1 ? 'item' : 'items'})
-                      </div>
-                    </div>
-                    <div className="entries-list">
                       {dateEntries.map((entry) => (
                         <div key={entry.id} className="entry-card">
                           <div className="entry-header">

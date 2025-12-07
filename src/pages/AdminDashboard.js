@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Employees from '../components/Employees';
+import AbsenceCertificates from '../components/AbsenceCertificates';
 import Settings from '../components/Settings';
 import './Dashboard.css';
 
@@ -30,6 +31,7 @@ const AdminDashboard = () => {
           ☰
         </button>
         {activePage === 'employees' && <Employees />}
+        {activePage === 'absence-certificates' && <AbsenceCertificates isAdmin={true} />}
         {activePage === 'settings' && <Settings />}
       </div>
       {sidebarOpen && (
