@@ -16,7 +16,7 @@
 
 .dashboard-content.modal-open {
   filter: brightness(0.7);
-  pointer-events: none;
+  /* Don't disable pointer events - let the modal overlay handle it */
 }
 
 .mobile-menu-button {
