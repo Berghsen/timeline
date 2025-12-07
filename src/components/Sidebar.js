@@ -42,6 +42,12 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
             Tijdlijn
           </button>
         )}
+        <button
+          className={`nav-item ${activePage === 'settings' ? 'active' : ''}`}
+          onClick={() => handleNavClick('settings')}
+        >
+          Instellingen
+        </button>
       </nav>
       <div className="sidebar-footer">
         <button className="sign-out-button" onClick={onSignOut}>

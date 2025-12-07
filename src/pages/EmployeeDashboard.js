@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Timeline from '../components/Timeline';
+import Settings from '../components/Settings';
 import './Dashboard.css';
 
 const EmployeeDashboard = () => {
@@ -29,6 +30,7 @@ const EmployeeDashboard = () => {
           ☰
         </button>
         {activePage === 'timeline' && <Timeline />}
+        {activePage === 'settings' && <Settings />}
       </div>
       {sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>

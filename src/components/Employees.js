@@ -189,31 +189,10 @@ const Employees = () => {
       return total + (endMinutes - startMinutes);
     }, 0);
     
-    // Deduct travel time for each unique day
-    const uniqueDays = new Set(entries.map(e => e.date)).size;
-    const travelTimeDeduction = uniqueDays * (selectedEmployee?.travel_time_minutes || 0);
-    
     return {
       total: totalMinutes,
-      afterTravel: Math.max(0, totalMinutes - travelTimeDeduction)
+      afterTravel: totalMinutes
     };
-  };
-
-  const getHoursIncludingTravel = (entries) => {
-    return entries.reduce((total, entry) => {
-      const startParts = entry.start_time.split(':').map(Number);
-      const endParts = entry.end_time.split(':').map(Number);
-      const startMinutes = startParts[0] * 60 + startParts[1];
-      const endMinutes = endParts[0] * 60 + endParts[1];
-      return total + (endMinutes - startMinutes);
-    }, 0);
-  };
-
-  const getHoursExcludingTravel = (entries) => {
-    const totalMinutes = getHoursIncludingTravel(entries);
-    const uniqueDays = new Set(entries.map(e => e.date)).size;
-    const travelTimeDeduction = uniqueDays * (selectedEmployee?.travel_time_minutes || 0);
-    return Math.max(0, totalMinutes - travelTimeDeduction);
   };
 
   const calculateDuration = (start, end) => {
@@ -403,15 +382,15 @@ const Employees = () => {
 
   return (
     <div className="employees-container">
-      <h1>Employees</h1>
+      <h1>Medewerkers</h1>
       
       <div className="employees-content">
         <div className="employees-list-section">
-          <h2>All Employees</h2>
+          <h2>Alle Medewerkers</h2>
           {loading ? (
-            <div className="loading">Loading employees...</div>
+            <div className="loading">Medewerkers laden...</div>
           ) : employees.length === 0 ? (
-            <div className="no-data">No employees found</div>
+            <div className="no-data">Geen medewerkers gevonden</div>
           ) : (
             <div className="employees-list">
               {employees.map((employee) => (
@@ -440,45 +419,17 @@ const Employees = () => {
                     className={`view-mode-btn ${viewMode === 'weekly' ? 'active' : ''}`}
                     onClick={() => setViewMode('weekly')}
                   >
-                    Weekly
+                    Week
                   </button>
                   <button
                     className={`view-mode-btn ${viewMode === 'monthly' ? 'active' : ''}`}
                     onClick={() => setViewMode('monthly')}
                   >
-                    Monthly
+                    Maand
                   </button>
                 </div>
               </div>
 
-              <div className="travel-time-setting">
-                <label>Travel Time (minutes per day):</label>
-                {editingTravelTime ? (
-                  <div className="travel-time-input">
-                    <input
-                      type="number"
-                      min="0"
-                      value={travelTime}
-                      onChange={(e) => setTravelTime(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          updateTravelTime();
-                        }
-                      }}
-                    />
-                    <button onClick={updateTravelTime} className="save-btn">Save</button>
-                    <button onClick={() => {
-                      setEditingTravelTime(false);
-                      setTravelTime(selectedEmployee.travel_time_minutes || 0);
-                    }} className="cancel-btn">Cancel</button>
-                  </div>
-                ) : (
-                  <div className="travel-time-display">
-                    <span>{selectedEmployee.travel_time_minutes || 0} minutes</span>
-                    <button onClick={() => setEditingTravelTime(true)} className="edit-btn">Edit</button>
-                  </div>
-                )}
-              </div>
               
               {entriesLoading ? (
                 <div className="loading">Items laden...</div>
@@ -537,15 +488,14 @@ const Employees = () => {
                           const dayNumber = date.getDate();
                           const isCurrentDay = isToday(date);
 
-                          const dateStr = date.toISOString().split('T')[0];
-                          const rawTotal = dateEntries.reduce((total, entry) => {
-                            const startParts = entry.start_time.split(':').map(Number);
-                            const endParts = entry.end_time.split(':').map(Number);
-                            const startMinutes = startParts[0] * 60 + startParts[1];
-                            const endMinutes = endParts[0] * 60 + endParts[1];
-                            return total + (endMinutes - startMinutes);
-                          }, 0);
-                          const travelDeduction = dateEntries.length > 0 ? (selectedEmployee?.travel_time_minutes || 0) : 0;
+                          // Helper function to format date in local timezone
+                          const formatDateLocal = (date) => {
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                          };
+                          const dateStr = formatDateLocal(date);
 
                           return (
                             <div 
@@ -560,13 +510,18 @@ const Employees = () => {
                               <div className="day-entries">
                                 {dateEntries.length > 0 ? (
                                   <>
-                                    <div className="day-entry-count">{dateEntries.length} {dateEntries.length === 1 ? 'entry' : 'entries'}</div>
+                                    <div className="day-entry-count">{dateEntries.length} {dateEntries.length === 1 ? 'item' : 'items'}</div>
                                     <div className="day-total">
                                       {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
                                     </div>
-                                    {travelDeduction > 0 && (
-                                      <div className="travel-deduction-small">
-                                        -{travelDeduction}m travel
+                                    {dateEntries.some(e => e.rechtstreeks) && (
+                                      <div className="rechtstreeks-indicator" style={{ 
+                                        fontSize: '0.7rem', 
+                                        color: '#22543d', 
+                                        marginTop: '0.25rem',
+                                        fontWeight: '500'
+                                      }}>
+                                        ✓ Rechtstreeks
                                       </div>
                                     )}
                                     <div className="day-entry-preview">
@@ -577,7 +532,7 @@ const Employees = () => {
                                         </div>
                                       ))}
                                       {dateEntries.length > 3 && (
-                                        <div className="preview-more">+{dateEntries.length - 3} more</div>
+                                        <div className="preview-more">+{dateEntries.length - 3} meer</div>
                                       )}
                                     </div>
                                   </>
@@ -598,40 +553,31 @@ const Employees = () => {
                         </div>
                         <div className="month-navigation">
                           <button onClick={() => navigateMonth(-1)} className="nav-button">
-                            ← Previous Month
+                            ← Vorige Maand
                           </button>
                           <button onClick={goToCurrentMonth} className="nav-button today">
-                            Current Month
+                            Huidige Maand
                           </button>
                           <button onClick={() => navigateMonth(1)} className="nav-button">
-                            Next Month →
+                            Volgende Maand →
                           </button>
                         </div>
                       </div>
                       <div className="month-totals">
                         <div className="total-item">
-                          <span className="total-label">Hours worked (incl travel time):</span>
+                          <span className="total-label">Gewerkte uren deze maand:</span>
                           <span className="total-value">
                             {(() => {
                               const totals = getMonthTotals();
-                              return `${Math.floor(totals.total / 60)}h ${totals.total % 60}m`;
-                            })()}
-                          </span>
-                        </div>
-                        <div className="total-item">
-                          <span className="total-label">Hours worked (excl travel time):</span>
-                          <span className="total-value">
-                            {(() => {
-                              const totals = getMonthTotals();
-                              return `${Math.floor(totals.afterTravel / 60)}h ${totals.afterTravel % 60}m`;
+                              return `${Math.floor(totals.total / 60)}u ${totals.total % 60}m`;
                             })()}
                           </span>
                         </div>
                       </div>
                       <div className="month-stats">
                         <div className="stat-card">
-                          <div className="stat-label">Days worked in {getMonthStats().monthName}</div>
-                          <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'day' : 'days'}</div>
+                          <div className="stat-label">Gewerkte dagen in {getMonthStats().monthName}</div>
+                          <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'dag' : 'dagen'}</div>
                         </div>
                       </div>
                       <div className="month-calendar">
@@ -664,13 +610,18 @@ const Employees = () => {
                               <div className="day-entries">
                                 {dateEntries.length > 0 ? (
                                   <>
-                                    <div className="day-entry-count">{dateEntries.length} {dateEntries.length === 1 ? 'entry' : 'entries'}</div>
+                                    <div className="day-entry-count">{dateEntries.length} {dateEntries.length === 1 ? 'item' : 'items'}</div>
                                     <div className="day-total">
                                       {Math.floor(netMinutes / 60)}h {netMinutes % 60}m
                                     </div>
-                                    {travelDeduction > 0 && (
-                                      <div className="travel-deduction">
-                                        -{travelDeduction}m travel
+                                    {dateEntries.some(e => e.rechtstreeks) && (
+                                      <div className="rechtstreeks-indicator" style={{ 
+                                        fontSize: '0.7rem', 
+                                        color: '#22543d', 
+                                        marginTop: '0.25rem',
+                                        fontWeight: '500'
+                                      }}>
+                                        ✓ Rechtstreeks
                                       </div>
                                     )}
                                   </>
@@ -689,7 +640,7 @@ const Employees = () => {
             </>
           ) : (
             <div className="no-selection">
-              Select an employee to view their time entries
+              Selecteer een medewerker om hun tijdregistraties te bekijken
             </div>
           )}
         </div>
@@ -699,7 +650,7 @@ const Employees = () => {
         <div className="date-detail-modal" onClick={() => setSelectedDate(null)}>
           <div className="date-detail-content" onClick={(e) => e.stopPropagation()}>
             <div className="date-detail-header">
-              <h3>{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+              <h3>{new Date(selectedDate).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
               <button className="close-button" onClick={() => setSelectedDate(null)}>×</button>
             </div>
             <div className="date-detail-entries">
@@ -709,8 +660,6 @@ const Employees = () => {
                 const startMinutes = startParts[0] * 60 + startParts[1];
                 const endMinutes = endParts[0] * 60 + endParts[1];
                 const duration = endMinutes - startMinutes;
-                const travelDeduction = selectedEmployee?.travel_time_minutes || 0;
-                const netDuration = Math.max(0, duration - travelDeduction);
 
                 return (
                   <div key={entry.id} className="date-detail-entry">
@@ -719,21 +668,77 @@ const Employees = () => {
                         <strong>{entry.start_time} - {entry.end_time}</strong>
                       </div>
                       <div className="detail-duration">
-                        {Math.floor(duration / 60)}h {duration % 60}m
-                        {travelDeduction > 0 && (
-                          <span className="detail-travel"> (after travel: {Math.floor(netDuration / 60)}h {netDuration % 60}m)</span>
-                        )}
+                        {Math.floor(duration / 60)}u {duration % 60}m
                       </div>
                     </div>
+                    {entry.rechtstreeks && (
+                      <div className="detail-rechtstreeks" style={{ 
+                        background: '#e6ffed', 
+                        padding: '0.5rem', 
+                        borderRadius: '4px', 
+                        marginTop: '0.5rem',
+                        color: '#22543d',
+                        fontWeight: '500'
+                      }}>
+                        ✓ Rechtstreeks
+                      </div>
+                    )}
                     {entry.comment && (
                       <div className="detail-comment">
-                        <strong>Comment:</strong> {entry.comment}
+                        <strong>Opmerking:</strong> {entry.comment}
+                      </div>
+                    )}
+                    {entry.niet_gewerkt && (
+                      <div className="detail-field">
+                        <strong>Niet gewerkt:</strong> {entry.niet_gewerkt}
+                      </div>
+                    )}
+                    {entry.verlof && (
+                      <div className="detail-field">
+                        <strong>Verlof:</strong> {entry.verlof}
+                      </div>
+                    )}
+                    {entry.ziek && (
+                      <div className="detail-field">
+                        <strong>Ziek:</strong> {entry.ziek}
+                      </div>
+                    )}
+                    {entry.rechtstreeks && (
+                      <div className="detail-rechtstreeks" style={{ 
+                        background: '#e6ffed', 
+                        padding: '0.5rem', 
+                        borderRadius: '4px', 
+                        marginTop: '0.5rem',
+                        color: '#22543d',
+                        fontWeight: '500'
+                      }}>
+                        ✓ Rechtstreeks
+                      </div>
+                    )}
+                    {entry.comment && (
+                      <div className="detail-comment">
+                        <strong>Opmerking:</strong> {entry.comment}
+                      </div>
+                    )}
+                    {entry.niet_gewerkt && (
+                      <div className="detail-field">
+                        <strong>Niet gewerkt:</strong> {entry.niet_gewerkt}
+                      </div>
+                    )}
+                    {entry.verlof && (
+                      <div className="detail-field">
+                        <strong>Verlof:</strong> {entry.verlof}
+                      </div>
+                    )}
+                    {entry.ziek && (
+                      <div className="detail-field">
+                        <strong>Ziek:</strong> {entry.ziek}
                       </div>
                     )}
                     <div className="detail-meta">
-                      <span>Created: {new Date(entry.created_at).toLocaleString()}</span>
+                      <span>Aangemaakt: {new Date(entry.created_at).toLocaleString('nl-NL')}</span>
                       {entry.updated_at !== entry.created_at && (
-                        <span>Updated: {new Date(entry.updated_at).toLocaleString()}</span>
+                        <span>Bijgewerkt: {new Date(entry.updated_at).toLocaleString('nl-NL')}</span>
                       )}
                     </div>
                   </div>

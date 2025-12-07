@@ -40,7 +40,7 @@
 }
 
 .view-mode-btn.active {
-  background: #667eea;
+  background: #4a5568;
   color: white;
 }
 
@@ -96,17 +96,17 @@
 
 .nav-button:hover {
   background: #f5f5f5;
-  border-color: #667eea;
+  border-color: #4a5568;
 }
 
 .nav-button.today {
-  background: #667eea;
+  background: #4a5568;
   color: white;
-  border-color: #667eea;
+  border-color: #4a5568;
 }
 
 .nav-button.today:hover {
-  background: #5568d3;
+  background: #2d3748;
 }
 
 .date-summary,
@@ -196,7 +196,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #4a5568;
 }
 
 .form-group input:disabled {
@@ -221,12 +221,28 @@
 }
 
 .submit-button {
-  background: #667eea;
+  background: #4a5568;
   color: white;
 }
 
 .submit-button:hover {
-  background: #5568d3;
+  background: #2d3748;
+}
+
+.delete-button-form {
+  background: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-button-form:hover {
+  background: #fdd;
+  border-color: #f99;
 }
 
 .cancel-button {
@@ -247,24 +263,28 @@
 }
 
 .add-entry-button {
-  width: 100%;
-  padding: 1rem;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 500;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: 300;
   cursor: pointer;
   margin-bottom: 2rem;
-  transition: all 0.3s;
-  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .add-entry-button:hover {
-  background: #5568d3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+  background: #e8e8e8;
+  border-color: #bbb;
+  transform: scale(1.05);
 }
 
 .entry-modal-overlay {
@@ -370,7 +390,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #667eea;
+  accent-color: #4a5568;
 }
 
 .loading,
@@ -407,7 +427,7 @@
 }
 
 .entry-duration {
-  color: #667eea;
+  color: #4a5568;
   font-weight: 500;
 }
 
@@ -483,10 +503,10 @@
   text-align: center;
   font-size: 1.1rem;
   font-weight: 500;
-  color: #667eea;
+  color: #4a5568;
   margin-bottom: 1rem;
   padding: 0.75rem;
-  background: #f0f0ff;
+  background: #f7fafc;
   border-radius: 6px;
 }
 
@@ -526,7 +546,7 @@
 .stat-value {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #667eea;
+  color: #4a5568;
 }
 
 .week-calendar {
@@ -548,21 +568,21 @@
 }
 
 .calendar-day:hover {
-  border-color: #667eea;
-  background: #f5f5ff;
+  border-color: #cbd5e0;
+  background: #f7fafc;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .calendar-day.today {
-  border-color: #667eea;
-  background: #e3f2fd;
+  border-color: #4a5568;
+  background: #edf2f7;
 }
 
 .calendar-day.selected {
-  border-color: #667eea;
-  background: #d1c4e9;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  border-color: #4a5568;
+  background: #e2e8f0;
+  box-shadow: 0 2px 6px rgba(74, 85, 104, 0.2);
 }
 
 .day-header {
@@ -588,7 +608,7 @@
 }
 
 .calendar-day.today .day-number {
-  color: #667eea;
+  color: #4a5568;
 }
 
 .day-entries {
@@ -607,7 +627,7 @@
 .day-total {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #667eea;
+  color: #4a5568;
   margin: 0.25rem 0;
 }
 

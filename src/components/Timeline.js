@@ -10,7 +10,13 @@ const Timeline = () => {
   const [monthEntries, setMonthEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState('weekly'); // 'weekly' or 'monthly'
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
     const day = today.getDay();
@@ -24,6 +30,9 @@ const Timeline = () => {
   const [endTime, setEndTime] = useState('');
   const [comment, setComment] = useState('');
   const [rechtstreeks, setRechtstreeks] = useState(false);
+  const [nietGewerkt, setNietGewerkt] = useState('');
+  const [verlof, setVerlof] = useState('');
+  const [ziek, setZiek] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -134,6 +143,9 @@ const Timeline = () => {
     setEndTime(entry.end_time);
     setComment(entry.comment || '');
     setRechtstreeks(entry.rechtstreeks || false);
+    setNietGewerkt(entry.niet_gewerkt || '');
+    setVerlof(entry.verlof || '');
+    setZiek(entry.ziek || '');
     setSelectedDate(entry.date);
     setShowForm(true);
   };
@@ -144,6 +156,9 @@ const Timeline = () => {
     setEndTime('');
     setComment('');
     setRechtstreeks(false);
+    setNietGewerkt('');
+    setVerlof('');
+    setZiek('');
     setShowForm(false);
   };
 
@@ -171,6 +186,9 @@ const Timeline = () => {
             end_time: endTime,
             comment: comment || null,
             rechtstreeks: rechtstreeks,
+            niet_gewerkt: nietGewerkt || null,
+            verlof: verlof || null,
+            ziek: ziek || null,
           })
           .eq('id', editingId)
           .eq('user_id', user.id);
@@ -187,6 +205,9 @@ const Timeline = () => {
             end_time: endTime,
             comment: comment || null,
             rechtstreeks: rechtstreeks,
+            niet_gewerkt: nietGewerkt || null,
+            verlof: verlof || null,
+            ziek: ziek || null,
           });
 
         if (error) throw error;
@@ -371,8 +392,16 @@ const Timeline = () => {
     setCurrentWeekStart(new Date(monday.setHours(0, 0, 0, 0)));
   };
 
+  // Helper function to format date in local timezone (fixes timezone bug)
+  const formatDateLocal = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleDateClick = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     const dateEntries = getEntriesForDate(date);
     
     if (dateEntries.length > 0) {
@@ -384,6 +413,9 @@ const Timeline = () => {
       setEndTime(firstEntry.end_time);
       setComment(firstEntry.comment || '');
       setRechtstreeks(firstEntry.rechtstreeks || false);
+      setNietGewerkt(firstEntry.niet_gewerkt || '');
+      setVerlof(firstEntry.verlof || '');
+      setZiek(firstEntry.ziek || '');
       setShowForm(true);
     } else {
       // If no entries, create a new one
@@ -394,6 +426,9 @@ const Timeline = () => {
       setEndTime('');
       setComment('');
       setRechtstreeks(false);
+      setNietGewerkt('');
+      setVerlof('');
+      setZiek('');
     }
   };
 
@@ -404,11 +439,14 @@ const Timeline = () => {
     setEndTime('');
     setComment('');
     setRechtstreeks(false);
-    setSelectedDate(new Date().toISOString().split('T')[0]);
+    setNietGewerkt('');
+    setVerlof('');
+    setZiek('');
+    setSelectedDate(formatDateLocal(new Date()));
   };
 
   const getEntriesForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     if (viewMode === 'weekly') {
       return weekEntries.filter(entry => entry.date === dateStr);
     } else {
@@ -427,7 +465,7 @@ const Timeline = () => {
   };
 
   const isSelected = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     return dateStr === selectedDate;
   };
 
@@ -454,8 +492,8 @@ const Timeline = () => {
         </div>
       </div>
 
-      <button className="add-entry-button" onClick={handleAddNew}>
-        + Nieuw Item Toevoegen
+      <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
+        +
       </button>
 
       {showForm && (
@@ -521,10 +559,55 @@ const Timeline = () => {
                 Rechtstreeks
               </label>
             </div>
+            <div className="form-group">
+              <label htmlFor="nietGewerkt">Niet gewerkt</label>
+              <input
+                id="nietGewerkt"
+                type="text"
+                value={nietGewerkt}
+                onChange={(e) => setNietGewerkt(e.target.value)}
+                placeholder="Reden waarom niet gewerkt..."
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="verlof">Verlof</label>
+              <input
+                id="verlof"
+                type="text"
+                value={verlof}
+                onChange={(e) => setVerlof(e.target.value)}
+                placeholder="Type verlof..."
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="ziek">Ziek</label>
+              <input
+                id="ziek"
+                type="text"
+                value={ziek}
+                onChange={(e) => setZiek(e.target.value)}
+                placeholder="Ziekte informatie..."
+              />
+            </div>
             <div className="form-actions">
               <button type="submit" className="submit-button">
                 {editingId ? 'Bijwerken' : 'Opslaan'}
               </button>
+              {editingId && (
+                <button 
+                  type="button" 
+                  onClick={async () => {
+                    if (window.confirm('Weet u zeker dat u dit item wilt verwijderen?')) {
+                      await handleDelete(editingId);
+                      handleCancel();
+                    }
+                  }} 
+                  className="delete-button-form"
+                  title="Verwijderen"
+                >
+                  🗑️
+                </button>
+              )}
               <button type="button" onClick={handleCancel} className="cancel-button">
                 Annuleren
               </button>
@@ -678,69 +761,6 @@ const Timeline = () => {
         </div>
       )}
 
-      {viewMode === 'weekly' && selectedDate && (
-        <div className="timeline-entries-section">
-          <div className="entries-header">
-            <h2>Items voor {new Date(selectedDate).toLocaleDateString('nl-NL')}</h2>
-            <div className="date-navigation">
-              <button onClick={() => navigateDate(-1)} className="nav-button">
-                ← Vorige
-              </button>
-              <button onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])} className="nav-button today">
-                Vandaag
-              </button>
-              <button onClick={() => navigateDate(1)} className="nav-button">
-                Volgende →
-              </button>
-            </div>
-          </div>
-          {loading ? (
-            <div className="loading">Items laden...</div>
-          ) : entries.length === 0 ? (
-            <div className="no-entries">Geen items voor deze datum</div>
-          ) : (
-            <div className="entries-list">
-              {entries.map((entry) => (
-                <div key={entry.id} className="entry-card">
-                  <div className="entry-header">
-                    <div className="entry-time">
-                      {entry.start_time} - {entry.end_time}
-                    </div>
-                    <div className="entry-duration">
-                      {calculateDuration(entry.start_time, entry.end_time)}
-                    </div>
-                  </div>
-                  {entry.comment && (
-                    <div className="entry-comment">{entry.comment}</div>
-                  )}
-                  <div className="entry-actions">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(entry);
-                      }}
-                      className="edit-button"
-                    >
-                      Bewerken
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(entry.id);
-                      }}
-                      className="delete-button"
-                    >
-                      Verwijderen
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {viewMode === 'monthly' && (
         <div className="timeline-entries-section">
