@@ -258,11 +258,17 @@ const Timeline = () => {
   };
 
   const calculateDuration = (start, end) => {
+    if (!start || !end) {
+      return '0h 0m';
+    }
     const startParts = start.split(':').map(Number);
     const endParts = end.split(':').map(Number);
     const startMinutes = startParts[0] * 60 + startParts[1];
     const endMinutes = endParts[0] * 60 + endParts[1];
-    const durationMinutes = endMinutes - startMinutes;
+    let durationMinutes = endMinutes - startMinutes;
+    if (durationMinutes <= 0) {
+      durationMinutes += 24 * 60;
+    }
     const hours = Math.floor(durationMinutes / 60);
     const minutes = durationMinutes % 60;
     return `${hours}h ${minutes}m`;
@@ -270,6 +276,9 @@ const Timeline = () => {
 
   const calculateTotalDuration = (entries) => {
     return entries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time) {
+        return total;
+      }
       const startParts = entry.start_time.split(':').map(Number);
       const endParts = entry.end_time.split(':').map(Number);
       let startMinutes = startParts[0] * 60 + startParts[1];
@@ -664,12 +673,12 @@ const Timeline = () => {
           </div>
           <div className="statistics-section">
             <div className="stat-card">
-              <div className="stat-label">Total hours worked in Week {getWeekNumber(currentWeekStart)}</div>
-              <div className="stat-value">{Math.floor(getWeekTotal() / 60)}h {getWeekTotal() % 60}m</div>
+              <div className="stat-label">Totaal gewerkte uren in Week {getWeekNumber(currentWeekStart)}</div>
+              <div className="stat-value">{Math.floor(getWeekTotal() / 60)}u {getWeekTotal() % 60}m</div>
             </div>
             <div className="stat-card">
-              <div className="stat-label">Total days worked in {getMonthStats().monthName}</div>
-              <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'day' : 'days'}</div>
+              <div className="stat-label">Totaal gewerkte dagen in {getMonthStats().monthName}</div>
+              <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'dag' : 'dagen'}</div>
             </div>
             <div className="stat-card">
               <div className="stat-label">Total hours worked in {getMonthStats().monthName}</div>
