@@ -74,7 +74,7 @@ const Employees = () => {
       console.log('No employee selected, clearing entries');
       setTimeEntries([]);
     }
-  }, [selectedEmployee, currentWeekStart, currentMonth, currentYear]);
+  }, [selectedEmployee, currentWeekStart, currentMonth, currentYear, viewMode]);
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -337,11 +337,28 @@ const Employees = () => {
   };
 
   const getMonthTotals = () => {
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    // Determine which month to use based on view mode (same logic as getMonthStats)
+    let statsMonth, statsYear;
+    if (viewMode === 'weekly') {
+      // When in weekly view, use the month of the current week start
+      statsMonth = currentWeekStart.getMonth();
+      statsYear = currentWeekStart.getFullYear();
+    } else {
+      // When in monthly view, use the current month/year states
+      statsMonth = currentMonth;
+      statsYear = currentYear;
+    }
+    
+    const firstDay = new Date(statsYear, statsMonth, 1);
+    const lastDay = new Date(statsYear, statsMonth + 1, 0);
+    
+    // Format dates in local timezone for string comparison (avoids timezone issues)
+    const firstDayStr = formatDateLocal(firstDay);
+    const lastDayStr = formatDateLocal(lastDay);
+    
+    // Filter entries using string comparison to avoid timezone issues
     const monthEntries = timeEntries.filter(entry => {
-      const entryDate = new Date(entry.date);
-      return entryDate >= firstDay && entryDate <= lastDay;
+      return entry.date >= firstDayStr && entry.date <= lastDayStr;
     });
     return calculateHoursWithTravelTime(monthEntries);
   };

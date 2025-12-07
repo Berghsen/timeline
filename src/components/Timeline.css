@@ -206,14 +206,16 @@
 
 .status-row {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .status-dropdown-wrapper {
   flex: 1;
-  min-width: 200px;
+  min-width: 0;
+  margin-right: 1rem;
 }
 
 .status-dropdown-wrapper label {
@@ -257,7 +259,9 @@
 .rechtstreeks-checkbox-wrapper {
   display: flex;
   align-items: center;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .form-group {
@@ -1108,26 +1112,50 @@
   .status-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
+    gap: 1rem;
     margin-bottom: 0.75rem;
   }
 
   .status-dropdown-wrapper {
     width: 100%;
     min-width: 0;
+    margin-right: 0;
   }
 
   .status-select {
     width: 100%;
     font-size: 1rem;
-    padding: 0.75rem;
+    padding: 0.875rem;
     padding-right: 2.5rem;
     box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: white;
   }
 
   .rechtstreeks-checkbox-wrapper {
     width: 100%;
+    padding-top: 0;
     padding-bottom: 0;
+    margin-top: 0.5rem;
+  }
+
+  .rechtstreeks-checkbox-wrapper .checkbox-label {
+    font-size: 1rem;
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rechtstreeks-checkbox-wrapper input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
   }
 
   .form-group {

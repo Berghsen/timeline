@@ -52,21 +52,31 @@ const Timeline = () => {
     }
   }, [selectedDate, viewMode, currentWeekStart, currentMonth, currentYear]);
 
-  // Prevent body scroll when modal is open
+  // Prevent body scroll when modal is open and add shadow to dashboard
   useEffect(() => {
+    const dashboardContent = document.querySelector('.dashboard-content');
     if (showForm) {
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
+      if (dashboardContent) {
+        dashboardContent.classList.add('modal-open');
+      }
     } else {
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
+      if (dashboardContent) {
+        dashboardContent.classList.remove('modal-open');
+      }
     }
     return () => {
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
+      if (dashboardContent) {
+        dashboardContent.classList.remove('modal-open');
+      }
     };
   }, [showForm]);
 
@@ -137,9 +147,13 @@ const Timeline = () => {
   };
 
   const fetchMonthEntries = async () => {
+    return fetchMonthEntriesForStats(currentMonth, currentYear);
+  };
+
+  const fetchMonthEntriesForStats = async (targetMonth, targetYear) => {
     try {
-      const firstDay = new Date(currentYear, currentMonth, 1);
-      const lastDay = new Date(currentYear, currentMonth + 1, 0);
+      const firstDay = new Date(targetYear, targetMonth, 1);
+      const lastDay = new Date(targetYear, targetMonth + 1, 0);
       
       // Format dates in local timezone
       const firstYear = firstDay.getFullYear();
@@ -403,7 +417,8 @@ const Timeline = () => {
       statsYear = currentYear;
     }
     
-    // Get entries for the correct month
+    // Get entries for the correct month - ALWAYS use monthEntries, not weekEntries
+    // This ensures we get ALL entries for the month, not just the current week
     const firstDay = new Date(statsYear, statsMonth, 1);
     const lastDay = new Date(statsYear, statsMonth + 1, 0);
     
@@ -411,9 +426,8 @@ const Timeline = () => {
     const firstDayStr = formatDateLocal(firstDay);
     const lastDayStr = formatDateLocal(lastDay);
     
-    // Filter entries for the correct month from the appropriate source
-    const entriesToUse = viewMode === 'weekly' ? weekEntries : monthEntries;
-    const monthEntriesForStats = entriesToUse.filter(entry => {
+    // Always filter from monthEntries to get ALL entries for the month
+    const monthEntriesForStats = monthEntries.filter(entry => {
       return entry.date >= firstDayStr && entry.date <= lastDayStr;
     });
     
@@ -648,7 +662,15 @@ const Timeline = () => {
                 <select
                   id="status"
                   value={status}
-                  onChange={(e) => setStatus(e.target.value)}
+                  onChange={(e) => {
+                    const newStatus = e.target.value;
+                    setStatus(newStatus);
+                    // Clear time entries when a status is selected
+                    if (newStatus !== '') {
+                      setStartTime('');
+                      setEndTime('');
+                    }
+                  }}
                   className="status-select"
                 >
                   <option value="">Geen status</option>
