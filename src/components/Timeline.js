@@ -33,6 +33,7 @@ const Timeline = () => {
   const [nietGewerkt, setNietGewerkt] = useState(false);
   const [verlof, setVerlof] = useState(false);
   const [ziek, setZiek] = useState(false);
+  const [recup, setRecup] = useState(false);
   const [bonnummer, setBonnummer] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
@@ -355,12 +356,20 @@ const Timeline = () => {
 
   const getMonthStats = () => {
     const totalMinutes = calculateTotalDuration(monthEntries);
-    const uniqueDays = new Set(monthEntries.map(entry => entry.date)).size;
+    // Only count days that have actual work (not niet_gewerkt, verlof, ziek, or recup)
+    const workedDays = new Set(
+      monthEntries
+        .filter(entry => {
+          // Exclude days with status checkboxes checked
+          return !entry.niet_gewerkt && !entry.verlof && !entry.ziek && !entry.recup;
+        })
+        .map(entry => entry.date)
+    ).size;
     const monthName = new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long' });
     
     return {
       totalHours: totalMinutes,
-      totalDays: uniqueDays,
+      totalDays: workedDays,
       monthName: monthName
     };
   };
@@ -681,8 +690,8 @@ const Timeline = () => {
               <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'dag' : 'dagen'}</div>
             </div>
             <div className="stat-card">
-              <div className="stat-label">Total hours worked in {getMonthStats().monthName}</div>
-              <div className="stat-value">{Math.floor(getMonthStats().totalHours / 60)}h {getMonthStats().totalHours % 60}m</div>
+              <div className="stat-label">Totaal gewerkte uren in {getMonthStats().monthName}</div>
+              <div className="stat-value">{Math.floor(getMonthStats().totalHours / 60)}u {getMonthStats().totalHours % 60}m</div>
             </div>
           </div>
           <div className="week-calendar">

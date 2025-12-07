@@ -141,5 +141,8 @@
   color: rgba(74, 85, 104, 0.7);
   font-size: 0.875rem;
   z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 

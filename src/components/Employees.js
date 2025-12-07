@@ -182,11 +182,18 @@ const Employees = () => {
 
   const calculateHoursWithTravelTime = (entries) => {
     const totalMinutes = entries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time) {
+        return total;
+      }
       const startParts = entry.start_time.split(':').map(Number);
       const endParts = entry.end_time.split(':').map(Number);
       const startMinutes = startParts[0] * 60 + startParts[1];
       const endMinutes = endParts[0] * 60 + endParts[1];
-      return total + (endMinutes - startMinutes);
+      let duration = endMinutes - startMinutes;
+      if (duration <= 0) {
+        duration += 24 * 60;
+      }
+      return total + duration;
     }, 0);
     
     return {
@@ -196,11 +203,17 @@ const Employees = () => {
   };
 
   const calculateDuration = (start, end) => {
+    if (!start || !end) {
+      return '0h 0m';
+    }
     const startParts = start.split(':').map(Number);
     const endParts = end.split(':').map(Number);
     const startMinutes = startParts[0] * 60 + startParts[1];
     const endMinutes = endParts[0] * 60 + endParts[1];
-    const durationMinutes = endMinutes - startMinutes;
+    let durationMinutes = endMinutes - startMinutes;
+    if (durationMinutes <= 0) {
+      durationMinutes += 24 * 60;
+    }
     const hours = Math.floor(durationMinutes / 60);
     const minutes = durationMinutes % 60;
     return `${hours}h ${minutes}m`;
@@ -208,11 +221,18 @@ const Employees = () => {
 
   const calculateTotalHours = () => {
     return timeEntries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time) {
+        return total;
+      }
       const startParts = entry.start_time.split(':').map(Number);
       const endParts = entry.end_time.split(':').map(Number);
       const startMinutes = startParts[0] * 60 + startParts[1];
       const endMinutes = endParts[0] * 60 + endParts[1];
-      return total + (endMinutes - startMinutes);
+      let duration = endMinutes - startMinutes;
+      if (duration <= 0) {
+        duration += 24 * 60;
+      }
+      return total + duration;
     }, 0);
   };
 
