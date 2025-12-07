@@ -411,6 +411,13 @@
   -webkit-overflow-scrolling: touch;
 }
 
+@media (max-width: 768px) {
+  .entry-modal-overlay {
+    align-items: stretch;
+    overflow: hidden;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1030,21 +1037,36 @@
   /* Modal Mobile Styles */
   .entry-modal-overlay {
     padding: 0;
-    align-items: flex-start;
-    overflow-y: auto;
+    align-items: stretch;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh; /* Use dynamic viewport height for mobile */
   }
 
   .entry-modal-content {
     max-width: 100%;
     width: 100%;
-    min-height: 100vh;
-    max-height: none;
+    height: 100vh;
+    height: 100dvh; /* Use dynamic viewport height for mobile */
+    max-height: 100vh;
+    max-height: 100dvh;
     padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     margin: 0;
     border-radius: 0;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    overscroll-behavior: contain;
   }
 
   .form-header {
@@ -1071,6 +1093,10 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
+    overflow-y: visible;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0;
   }
 
   .entry-modal-content .form-row {
@@ -1143,6 +1169,7 @@
     background: white;
     z-index: 10;
     flex-shrink: 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .form-actions {
@@ -1235,16 +1262,27 @@
 
   .entry-modal-overlay {
     padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    height: 100dvh;
   }
 
   .entry-modal-content {
     max-width: 100%;
     width: 100%;
+    height: 100vh;
+    height: 100dvh;
     max-height: 100vh;
+    max-height: 100dvh;
     border-radius: 0;
     margin: 0;
     padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
     box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .entry-modal-content .form-row {

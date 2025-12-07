@@ -52,6 +52,24 @@ const Timeline = () => {
     }
   }, [selectedDate, viewMode, currentWeekStart, currentMonth, currentYear]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (showForm) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [showForm]);
+
   const fetchEntries = async () => {
     setLoading(true);
     try {
@@ -373,17 +391,43 @@ const Timeline = () => {
   };
 
   const getMonthStats = () => {
-    const totalMinutes = calculateTotalDuration(monthEntries);
+    // Determine which month to use based on view mode
+    let statsMonth, statsYear;
+    if (viewMode === 'weekly') {
+      // When in weekly view, use the month of the current week start
+      statsMonth = currentWeekStart.getMonth();
+      statsYear = currentWeekStart.getFullYear();
+    } else {
+      // When in monthly view, use the current month/year states
+      statsMonth = currentMonth;
+      statsYear = currentYear;
+    }
+    
+    // Get entries for the correct month
+    const firstDay = new Date(statsYear, statsMonth, 1);
+    const lastDay = new Date(statsYear, statsMonth + 1, 0);
+    
+    // Format dates in local timezone
+    const firstDayStr = formatDateLocal(firstDay);
+    const lastDayStr = formatDateLocal(lastDay);
+    
+    // Filter entries for the correct month from the appropriate source
+    const entriesToUse = viewMode === 'weekly' ? weekEntries : monthEntries;
+    const monthEntriesForStats = entriesToUse.filter(entry => {
+      return entry.date >= firstDayStr && entry.date <= lastDayStr;
+    });
+    
+    const totalMinutes = calculateTotalDuration(monthEntriesForStats);
     // Only count days that have actual work (not niet_gewerkt, verlof, ziek, or recup)
     const workedDays = new Set(
-      monthEntries
+      monthEntriesForStats
         .filter(entry => {
           // Exclude days with status checkboxes checked
           return !entry.niet_gewerkt && !entry.verlof && !entry.ziek && !entry.recup;
         })
         .map(entry => entry.date)
     ).size;
-    const monthName = new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long' });
+    const monthName = new Date(statsYear, statsMonth, 1).toLocaleDateString('nl-NL', { month: 'long' });
     
     return {
       totalHours: totalMinutes,

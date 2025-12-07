@@ -347,11 +347,28 @@ const Employees = () => {
   };
 
   const getMonthStats = () => {
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    // Determine which month to use based on view mode
+    let statsMonth, statsYear;
+    if (viewMode === 'weekly') {
+      // When in weekly view, use the month of the current week start
+      statsMonth = currentWeekStart.getMonth();
+      statsYear = currentWeekStart.getFullYear();
+    } else {
+      // When in monthly view, use the current month/year states
+      statsMonth = currentMonth;
+      statsYear = currentYear;
+    }
+    
+    const firstDay = new Date(statsYear, statsMonth, 1);
+    const lastDay = new Date(statsYear, statsMonth + 1, 0);
+    
+    // Format dates in local timezone for comparison
+    const firstDayStr = formatDateLocal(firstDay);
+    const lastDayStr = formatDateLocal(lastDay);
+    
+    // Filter entries for the correct month using string comparison
     const monthEntries = timeEntries.filter(entry => {
-      const entryDate = new Date(entry.date);
-      return entryDate >= firstDay && entryDate <= lastDay;
+      return entry.date >= firstDayStr && entry.date <= lastDayStr;
     });
     
     // Only count days that have actual work (not niet_gewerkt, verlof, ziek, or recup)
@@ -363,7 +380,7 @@ const Employees = () => {
         })
         .map(entry => entry.date)
     ).size;
-    const monthName = new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long' });
+    const monthName = new Date(statsYear, statsMonth, 1).toLocaleDateString('nl-NL', { month: 'long' });
     
     return {
       totalDays: workedDays,
