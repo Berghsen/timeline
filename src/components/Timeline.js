@@ -460,18 +460,11 @@ const Timeline = () => {
       setEndTime(firstEntry.end_time || '');
       setComment(firstEntry.comment || '');
       setRechtstreeks(firstEntry.rechtstreeks || false);
-      // Set status dropdown based on entry
-      if (firstEntry.niet_gewerkt) {
-        setStatus('niet_gewerkt');
-      } else if (firstEntry.verlof) {
-        setStatus('verlof');
-      } else if (firstEntry.ziek) {
-        setStatus('ziek');
-      } else if (firstEntry.recup) {
-        setStatus('recup');
-      } else {
-        setStatus('');
-      }
+      // Set status checkboxes based on entry
+      setNietGewerkt(firstEntry.niet_gewerkt || false);
+      setVerlof(firstEntry.verlof || false);
+      setZiek(firstEntry.ziek || false);
+      setRecup(firstEntry.recup || false);
       setBonnummer(firstEntry.bonnummer || '');
       setShowForm(true);
     } else {
@@ -565,7 +558,7 @@ const Timeline = () => {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  disabled={status !== ''}
+                  disabled={nietGewerkt || verlof || ziek || recup}
                 />
               </div>
               <div className="form-group">
@@ -575,7 +568,7 @@ const Timeline = () => {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  disabled={status !== ''}
+                  disabled={nietGewerkt || verlof || ziek || recup}
                 />
               </div>
             </div>
