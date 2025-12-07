@@ -30,7 +30,9 @@ const Timeline = () => {
   const [endTime, setEndTime] = useState('');
   const [comment, setComment] = useState('');
   const [rechtstreeks, setRechtstreeks] = useState(false);
-  const [status, setStatus] = useState(''); // 'niet_gewerkt', 'verlof', 'ziek', or ''
+  const [nietGewerkt, setNietGewerkt] = useState(false);
+  const [verlof, setVerlof] = useState(false);
+  const [ziek, setZiek] = useState(false);
   const [recup, setRecup] = useState(false);
   const [bonnummer, setBonnummer] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -149,13 +151,14 @@ const Timeline = () => {
 
   const handleEdit = (entry) => {
     setEditingId(entry.id);
-    setStartTime(entry.start_time);
-    setEndTime(entry.end_time);
+    setStartTime(entry.start_time || '');
+    setEndTime(entry.end_time || '');
     setComment(entry.comment || '');
     setRechtstreeks(entry.rechtstreeks || false);
     setNietGewerkt(entry.niet_gewerkt || false);
     setVerlof(entry.verlof || false);
     setZiek(entry.ziek || false);
+    setRecup(entry.recup || false);
     setBonnummer(entry.bonnummer || '');
     setSelectedDate(entry.date);
     setShowForm(true);
@@ -170,6 +173,7 @@ const Timeline = () => {
     setNietGewerkt(false);
     setVerlof(false);
     setZiek(false);
+    setRecup(false);
     setBonnummer('');
     setShowForm(false);
   };
@@ -179,7 +183,7 @@ const Timeline = () => {
     setError('');
 
     // Time fields are optional - can be left empty if status is selected
-    const hasStatus = status !== '';
+    const hasStatus = nietGewerkt || verlof || ziek || recup;
     
     // Only validate times if they are provided and no status is selected
     if (!hasStatus && startTime && endTime) {
@@ -200,10 +204,10 @@ const Timeline = () => {
         end_time: endTimeToUse || null,
         comment: comment || null,
         rechtstreeks: rechtstreeks || false,
-        niet_gewerkt: status === 'niet_gewerkt',
-        verlof: status === 'verlof',
-        ziek: status === 'ziek',
-        recup: status === 'recup',
+        niet_gewerkt: nietGewerkt || false,
+        verlof: verlof || false,
+        ziek: ziek || false,
+        recup: recup || false,
       };
       
       // Add bonnummer if provided
@@ -482,6 +486,7 @@ const Timeline = () => {
       setNietGewerkt(false);
       setVerlof(false);
       setZiek(false);
+      setRecup(false);
       setBonnummer('');
     }
   };
@@ -489,15 +494,16 @@ const Timeline = () => {
   const handleAddNew = () => {
     setShowForm(true);
     setEditingId(null);
-      setStartTime('');
-      setEndTime('');
-      setComment('');
-      setRechtstreeks(false);
-      setNietGewerkt(false);
-      setVerlof(false);
-      setZiek(false);
-      setBonnummer('');
-      setSelectedDate(formatDateLocal(new Date()));
+    setStartTime('');
+    setEndTime('');
+    setComment('');
+    setRechtstreeks(false);
+    setNietGewerkt(false);
+    setVerlof(false);
+    setZiek(false);
+    setRecup(false);
+    setBonnummer('');
+    setSelectedDate(formatDateLocal(new Date()));
   };
 
   const getEntriesForDate = (date) => {
@@ -604,19 +610,72 @@ const Timeline = () => {
               </label>
             </div>
             <div className="form-group">
-              <label htmlFor="status">Status</label>
-              <select
-                id="status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '4px', fontSize: '1rem' }}
-              >
-                <option value="">-- Selecteer status --</option>
-                <option value="niet_gewerkt">Niet gewerkt</option>
-                <option value="verlof">Verlof</option>
-                <option value="ziek">Ziek</option>
-                <option value="recup">Recup</option>
-              </select>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={nietGewerkt}
+                  onChange={(e) => {
+                    setNietGewerkt(e.target.checked);
+                    if (e.target.checked) {
+                      setVerlof(false);
+                      setZiek(false);
+                      setRecup(false);
+                    }
+                  }}
+                />
+                <span>Niet gewerkt</span>
+              </label>
+            </div>
+            <div className="form-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={verlof}
+                  onChange={(e) => {
+                    setVerlof(e.target.checked);
+                    if (e.target.checked) {
+                      setNietGewerkt(false);
+                      setZiek(false);
+                      setRecup(false);
+                    }
+                  }}
+                />
+                <span>Verlof</span>
+              </label>
+            </div>
+            <div className="form-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={ziek}
+                  onChange={(e) => {
+                    setZiek(e.target.checked);
+                    if (e.target.checked) {
+                      setNietGewerkt(false);
+                      setVerlof(false);
+                      setRecup(false);
+                    }
+                  }}
+                />
+                <span>Ziek</span>
+              </label>
+            </div>
+            <div className="form-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={recup}
+                  onChange={(e) => {
+                    setRecup(e.target.checked);
+                    if (e.target.checked) {
+                      setNietGewerkt(false);
+                      setVerlof(false);
+                      setZiek(false);
+                    }
+                  }}
+                />
+                <span>Recup</span>
+              </label>
             </div>
             <div className="form-actions">
               <button type="submit" className="submit-button">
