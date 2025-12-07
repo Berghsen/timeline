@@ -3,16 +3,21 @@
   left: 0;
   top: 0;
   height: 100vh;
-  width: 250px;
-  background: white;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  width: 280px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
   display: flex;
   flex-direction: column;
+  z-index: 100;
 }
 
 .sidebar-header {
   padding: 2rem 1.5rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .logo-container {
@@ -29,10 +34,12 @@
 }
 
 .sidebar-header h2 {
-  color: #333;
+  color: #1a1a1a;
   margin-bottom: 1rem;
   font-size: 1.5rem;
   text-align: center;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .user-info {
@@ -40,14 +47,15 @@
 }
 
 .user-name {
-  color: #333;
-  font-weight: 500;
+  color: #1a1a1a;
+  font-weight: 600;
   margin-bottom: 0.25rem;
 }
 
 .user-role {
   color: #666;
   font-size: 0.85rem;
+  font-weight: 400;
 }
 
 .sidebar-nav {
@@ -62,44 +70,70 @@
   border: none;
   text-align: left;
   cursor: pointer;
-  color: #666;
+  color: #4a5568;
   font-size: 1rem;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-left: 3px solid transparent;
-}
-
-.nav-item:hover {
-  background: #f5f5f5;
-  color: #333;
-}
-
-.nav-item.active {
-  background: #f0f0ff;
-  color: #667eea;
-  border-left-color: #667eea;
+  position: relative;
   font-weight: 500;
 }
 
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item:hover {
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+}
+
+.nav-item:hover::before {
+  width: 100%;
+}
+
+.nav-item.active {
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+  border-left-color: #6366f1;
+  font-weight: 600;
+}
+
+.nav-item.active::before {
+  width: 100%;
+}
+
 .sidebar-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #eee;
+  padding: 1.5rem 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .sign-out-button {
   width: 100%;
-  padding: 0.75rem;
-  background: #fee;
-  color: #c33;
-  border: 1px solid #fcc;
-  border-radius: 4px;
+  padding: 0.875rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: all 0.3s;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 
 .sign-out-button:hover {
-  background: #fdd;
-  border-color: #faa;
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
 }
 
 .sidebar-close-button {
@@ -107,30 +141,32 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: #f5f5f5;
-  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   font-size: 1.8rem;
   color: #333;
   cursor: pointer;
-  width: 36px;
-  height: 36px;
-  display: flex;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   line-height: 1;
+  z-index: 10;
 }
 
 .sidebar-close-button:hover {
-  background: #e0e0e0;
-  transform: rotate(90deg);
+  background: rgba(255, 255, 255, 1);
+  transform: rotate(90deg) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    transition: transform 0.3s;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
   }
 
@@ -140,6 +176,12 @@
 
   .sidebar-close-button {
     display: flex;
+  }
+}
+
+@media (min-width: 769px) {
+  .sidebar-close-button {
+    display: none !important;
   }
 }
 

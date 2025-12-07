@@ -169,17 +169,13 @@ const Timeline = () => {
     e.preventDefault();
     setError('');
 
-    // If niet_gewerkt, verlof, or ziek is checked, start/end time is optional
+    // Time fields are optional - can be left empty
     const hasStatus = nietGewerkt || verlof || ziek;
     
-    if (!hasStatus && (!startTime || !endTime)) {
-      setError('Vul zowel start- als eindtijd in');
-      return;
-    }
-    
-    if (!hasStatus && startTime >= endTime && startTime && endTime) {
-      // Only validate time order if we have times and no status checkbox
-      // (end time after midnight is allowed)
+    // Only validate times if they are provided and no status is checked
+    if (!hasStatus && startTime && endTime) {
+      // Validate time order (end time after midnight is allowed, so we check differently)
+      // This validation is handled in calculateDuration
     }
 
     // Handle end time after midnight (e.g., 16:00 to 02:00 = 10 hours)
@@ -191,8 +187,8 @@ const Timeline = () => {
     try {
       // Build data object
       const data = {
-        start_time: hasStatus ? null : startTime,
-        end_time: hasStatus ? null : endTimeToUse,
+        start_time: startTime || null,
+        end_time: endTimeToUse || null,
         comment: comment || null,
         rechtstreeks: rechtstreeks || false,
         niet_gewerkt: nietGewerkt || false,
@@ -326,19 +322,19 @@ const Timeline = () => {
   const getWeekTitle = () => {
     const weekEnd = new Date(currentWeekStart);
     weekEnd.setDate(weekEnd.getDate() + 6);
-    const startMonth = currentWeekStart.toLocaleDateString('en-US', { month: 'short' });
-    const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+    const startMonth = currentWeekStart.toLocaleDateString('nl-NL', { month: 'short' });
+    const endMonth = weekEnd.toLocaleDateString('nl-NL', { month: 'short' });
     const startYear = currentWeekStart.getFullYear();
     const endYear = weekEnd.getFullYear();
     const weekNumber = getWeekNumber(currentWeekStart);
     
     let dateRange;
     if (startMonth === endMonth && startYear === endYear) {
-      dateRange = `${startMonth} ${currentWeekStart.getDate()} - ${weekEnd.getDate()}, ${startYear}`;
+      dateRange = `${currentWeekStart.getDate()} ${startMonth} - ${weekEnd.getDate()} ${endMonth} ${startYear}`;
     } else if (startYear === endYear) {
-      dateRange = `${startMonth} ${currentWeekStart.getDate()} - ${endMonth} ${weekEnd.getDate()}, ${startYear}`;
+      dateRange = `${currentWeekStart.getDate()} ${startMonth} - ${weekEnd.getDate()} ${endMonth} ${startYear}`;
     } else {
-      dateRange = `${startMonth} ${currentWeekStart.getDate()}, ${startYear} - ${endMonth} ${weekEnd.getDate()}, ${endYear}`;
+      dateRange = `${currentWeekStart.getDate()} ${startMonth} ${startYear} - ${weekEnd.getDate()} ${endMonth} ${endYear}`;
     }
     
     return `Week ${weekNumber} • ${dateRange}`;
@@ -429,8 +425,8 @@ const Timeline = () => {
       const firstEntry = dateEntries[0];
       setSelectedDate(dateStr);
       setEditingId(firstEntry.id);
-      setStartTime(firstEntry.start_time);
-      setEndTime(firstEntry.end_time);
+      setStartTime(firstEntry.start_time || '');
+      setEndTime(firstEntry.end_time || '');
       setComment(firstEntry.comment || '');
       setRechtstreeks(firstEntry.rechtstreeks || false);
       setNietGewerkt(firstEntry.niet_gewerkt || false);
@@ -521,24 +517,22 @@ const Timeline = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="startTime">Starttijd {nietGewerkt || verlof || ziek ? '(optioneel)' : ''}</label>
+                <label htmlFor="startTime">Starttijd</label>
                 <input
                   id="startTime"
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  required={!nietGewerkt && !verlof && !ziek}
                   disabled={nietGewerkt || verlof || ziek}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="endTime">Eindtijd {nietGewerkt || verlof || ziek ? '(optioneel)' : ''}</label>
+                <label htmlFor="endTime">Eindtijd</label>
                 <input
                   id="endTime"
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  required={!nietGewerkt && !verlof && !ziek}
                   disabled={nietGewerkt || verlof || ziek}
                 />
               </div>

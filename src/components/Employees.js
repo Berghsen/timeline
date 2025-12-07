@@ -237,8 +237,8 @@ const Employees = () => {
   const getWeekTitle = () => {
     const weekEnd = new Date(currentWeekStart);
     weekEnd.setDate(weekEnd.getDate() + 6);
-    const startMonth = currentWeekStart.toLocaleDateString('en-US', { month: 'short' });
-    const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+    const startMonth = currentWeekStart.toLocaleDateString('nl-NL', { month: 'short' });
+    const endMonth = weekEnd.toLocaleDateString('nl-NL', { month: 'short' });
     const startYear = currentWeekStart.getFullYear();
     const endYear = weekEnd.getFullYear();
     const weekNumber = getWeekNumber(currentWeekStart);
@@ -277,15 +277,20 @@ const Employees = () => {
   const getTotalForDate = (date) => {
     const dateEntries = getEntriesForDate(date);
     const totalMinutes = dateEntries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time) {
+        return total;
+      }
       const startParts = entry.start_time.split(':').map(Number);
       const endParts = entry.end_time.split(':').map(Number);
       const startMinutes = startParts[0] * 60 + startParts[1];
       const endMinutes = endParts[0] * 60 + endParts[1];
-      return total + (endMinutes - startMinutes);
+      let duration = endMinutes - startMinutes;
+      if (duration <= 0) {
+        duration += 24 * 60;
+      }
+      return total + duration;
     }, 0);
-    // Deduct travel time if there are entries for this day
-    const travelDeduction = dateEntries.length > 0 ? (selectedEmployee?.travel_time_minutes || 0) : 0;
-    return Math.max(0, totalMinutes - travelDeduction);
+    return totalMinutes;
   };
 
   const getWeekTotals = () => {
@@ -682,26 +687,33 @@ const Employees = () => {
             </div>
             <div className="date-detail-entries">
               {timeEntries.filter(entry => entry.date === selectedDate).map((entry) => {
-                const startParts = entry.start_time.split(':').map(Number);
-                const endParts = entry.end_time.split(':').map(Number);
-                let startMinutes = startParts[0] * 60 + startParts[1];
-                let endMinutes = endParts[0] * 60 + endParts[1];
-                
-                // Handle end time after midnight
-                if (endMinutes <= startMinutes) {
-                  endMinutes += 24 * 60;
+                let duration = 0;
+                if (entry.start_time && entry.end_time) {
+                  const startParts = entry.start_time.split(':').map(Number);
+                  const endParts = entry.end_time.split(':').map(Number);
+                  let startMinutes = startParts[0] * 60 + startParts[1];
+                  let endMinutes = endParts[0] * 60 + endParts[1];
+                  
+                  // Handle end time after midnight
+                  if (endMinutes <= startMinutes) {
+                    endMinutes += 24 * 60;
+                  }
+                  duration = endMinutes - startMinutes;
                 }
-                const duration = endMinutes - startMinutes;
 
                 return (
                   <div key={entry.id} className="date-detail-entry">
                     <div className="detail-entry-header">
-                      <div className="detail-time">
-                        <strong>{entry.start_time} - {entry.end_time}</strong>
-                      </div>
-                      <div className="detail-duration">
-                        {Math.floor(duration / 60)}u {duration % 60}m
-                      </div>
+                      {entry.start_time && entry.end_time && (
+                        <>
+                          <div className="detail-time">
+                            <strong>{entry.start_time} - {entry.end_time}</strong>
+                          </div>
+                          <div className="detail-duration">
+                            {Math.floor(duration / 60)}u {duration % 60}m
+                          </div>
+                        </>
+                      )}
                     </div>
                     {entry.bonnummer && (
                       <div className="detail-field">

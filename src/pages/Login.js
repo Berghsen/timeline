@@ -67,6 +67,9 @@ const Login = () => {
           </button>
         </form>
       </div>
+      <footer className="app-footer">
+        Made with ❤️ by Thomas
+      </footer>
     </div>
   );
 };
