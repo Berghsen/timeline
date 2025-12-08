@@ -584,16 +584,24 @@ const Employees = () => {
                                     {(() => {
                                       const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
                                       
+                                      // Determine display text - check status flags first, then time ranges
+                                      let displayText = 'Gewerkt';
+                                      if (firstEntry.verlof) {
+                                        displayText = 'Verlof';
+                                      } else if (firstEntry.ziek) {
+                                        displayText = 'Ziek';
+                                      } else if (firstEntry.niet_gewerkt) {
+                                        displayText = 'Niet gewerkt';
+                                      } else if (firstEntry.recup) {
+                                        displayText = 'Recup';
+                                      } else if (firstEntry.start_time && firstEntry.end_time) {
+                                        displayText = `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}`;
+                                      }
+                                      
                                       return (
                                         <>
                                           <div className={`day-status ${statusClass}`}>
-                                            {firstEntry.verlof ? 'Verlof' : 
-                                             firstEntry.ziek ? 'Ziek' : 
-                                             firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
-                                             firstEntry.recup ? 'Recup' : 
-                                             firstEntry.start_time && firstEntry.end_time ? 
-                                               `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
-                                               'Gewerkt'}
+                                            {displayText}
                                           </div>
                                           {!hasStatus && (
                                             <div className="day-total">
@@ -714,16 +722,24 @@ const Employees = () => {
                                                         firstEntry.recup ? 'status-recup' : 
                                                         'status-gewerkt';
                                       
+                                      // Determine display text - check status flags first, then time ranges
+                                      let displayText = 'Gewerkt';
+                                      if (firstEntry.verlof) {
+                                        displayText = 'Verlof';
+                                      } else if (firstEntry.ziek) {
+                                        displayText = 'Ziek';
+                                      } else if (firstEntry.niet_gewerkt) {
+                                        displayText = 'Niet gewerkt';
+                                      } else if (firstEntry.recup) {
+                                        displayText = 'Recup';
+                                      } else if (firstEntry.start_time && firstEntry.end_time) {
+                                        displayText = `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}`;
+                                      }
+                                      
                                       return (
                                         <>
                                           <div className={`day-status ${statusClass}`}>
-                                            {firstEntry.verlof ? 'Verlof' : 
-                                             firstEntry.ziek ? 'Ziek' : 
-                                             firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
-                                             firstEntry.recup ? 'Recup' : 
-                                             firstEntry.start_time && firstEntry.end_time ? 
-                                               `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
-                                               'Gewerkt'}
+                                            {displayText}
                                           </div>
                                           {!hasStatus && (
                                             <div className="day-total">
