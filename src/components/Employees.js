@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './Employees.css';
 
 // Helper function to make API calls - works both locally (with proxy) and on Vercel
@@ -316,6 +318,198 @@ const Employees = () => {
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  };
+
+  const exportToPDF = () => {
+    if (!selectedEmployee) {
+      alert('Selecteer eerst een medewerker om te exporteren.');
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      let yPos = 20;
+
+      // Get employee name
+      const employeeName = selectedEmployee.full_name || selectedEmployee.email || 'Onbekend';
+
+      // Header
+      doc.setFontSize(18);
+      doc.text('Tijdregistratie', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 10;
+
+      doc.setFontSize(12);
+      doc.text(`Medewerker: ${employeeName}`, 14, yPos);
+      yPos += 8;
+
+      let entriesToExport, periodTitle, totalMinutes, stats;
+      let allDates = [];
+      
+      if (viewMode === 'weekly') {
+        const weekEnd = new Date(currentWeekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        const weekStartStr = formatDateLocal(currentWeekStart);
+        const weekEndStr = formatDateLocal(weekEnd);
+        
+        entriesToExport = timeEntries.filter(entry => {
+          return entry.date >= weekStartStr && entry.date <= weekEndStr;
+        });
+        
+        periodTitle = getWeekTitle();
+        const totals = getWeekTotals();
+        totalMinutes = totals.total;
+        
+        // Get all 7 days of the week
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(currentWeekStart);
+          date.setDate(date.getDate() + i);
+          allDates.push(formatDateLocal(date));
+        }
+        
+        stats = {
+          totalHours: totalMinutes,
+          totalDays: totals.totalDays || 0,
+          nightHours: calculateNightHours(entriesToExport),
+          sundayHours: calculateSundayHours(entriesToExport)
+        };
+      } else {
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const firstDayStr = formatDateLocal(firstDay);
+        const lastDayStr = formatDateLocal(lastDay);
+        
+        entriesToExport = timeEntries.filter(entry => {
+          return entry.date >= firstDayStr && entry.date <= lastDayStr;
+        });
+        
+        periodTitle = new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
+        const totals = getMonthTotals();
+        totalMinutes = totals.totalHours || 0;
+        stats = totals;
+        
+        // Get all days of the month
+        const startDate = new Date(firstDay);
+        while (startDate <= lastDay) {
+          allDates.push(formatDateLocal(startDate));
+          startDate.setDate(startDate.getDate() + 1);
+        }
+      }
+
+      doc.setFontSize(11);
+      doc.text(`Periode: ${periodTitle}`, 14, yPos);
+      yPos += 8;
+
+      // Summary stats
+      doc.setFontSize(10);
+      doc.text(`Totaal gewerkte uren: ${Math.floor(totalMinutes / 60)}u ${totalMinutes % 60}m`, 14, yPos);
+      yPos += 6;
+      
+      if (viewMode === 'monthly') {
+        doc.text(`Totaal gewerkte dagen: ${stats.totalDays || 0}`, 14, yPos);
+        yPos += 6;
+      }
+      
+      doc.text(`Nachturen (1:00-6:00): ${Math.floor((stats.nightHours || 0) / 60)}u ${(stats.nightHours || 0) % 60}m`, 14, yPos);
+      yPos += 6;
+      doc.text(`Zondaguren: ${Math.floor((stats.sundayHours || 0) / 60)}u ${(stats.sundayHours || 0) % 60}m`, 14, yPos);
+      yPos += 10;
+
+      // Prepare table data - include ALL days
+      const tableData = [];
+      const entriesByDate = {};
+      entriesToExport.forEach(entry => {
+        if (!entriesByDate[entry.date]) {
+          entriesByDate[entry.date] = [];
+        }
+        entriesByDate[entry.date].push(entry);
+      });
+      
+      // Process all dates, including those without entries
+      allDates.forEach(dateStr => {
+        const date = new Date(dateStr + 'T00:00:00');
+        const dateFormatted = date.toLocaleDateString('nl-NL', { weekday: 'short', day: '2-digit', month: 'short' });
+        
+        const dayEntries = entriesByDate[dateStr] || [];
+        
+        if (dayEntries.length === 0) {
+          tableData.push([
+            dateFormatted,
+            '-',
+            '-',
+            '',
+            '',
+            'Nee'
+          ]);
+        } else {
+          const sortedDayEntries = [...dayEntries].sort((a, b) => {
+            return (a.start_time || '').localeCompare(b.start_time || '');
+          });
+          
+          sortedDayEntries.forEach((entry, index) => {
+            let status = '';
+            if (entry.recup) status = 'Recup';
+            else if (entry.verlof) status = 'Verlof';
+            else if (entry.ziek) status = 'Ziek';
+            else if (entry.niet_gewerkt) status = 'Niet gewerkt';
+            
+            let timeRange = '';
+            let duration = '';
+            if (entry.start_time && entry.end_time) {
+              timeRange = `${entry.start_time} - ${entry.end_time}`;
+              const startParts = entry.start_time.split(':').map(Number);
+              const endParts = entry.end_time.split(':').map(Number);
+              let startMinutes = startParts[0] * 60 + startParts[1];
+              let endMinutes = endParts[0] * 60 + endParts[1];
+              if (endMinutes <= startMinutes) {
+                endMinutes += 24 * 60;
+              }
+              const dur = endMinutes - startMinutes;
+              duration = `${Math.floor(dur / 60)}u ${dur % 60}m`;
+            }
+            
+            const displayDate = index === 0 ? dateFormatted : '';
+            
+            tableData.push([
+              displayDate,
+              timeRange || status || '-',
+              duration || '-',
+              entry.comment || '',
+              entry.bonnummer || '',
+              entry.rechtstreeks ? 'Ja' : 'Nee'
+            ]);
+          });
+        }
+      });
+
+      // Add table
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Datum', 'Tijd/Status', 'Duur', 'Opmerking', 'Bonnummer', 'Rechtstreeks']],
+        body: tableData,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 50 },
+          4: { cellWidth: 25 },
+          5: { cellWidth: 25 }
+        },
+        margin: { left: 14, right: 14 }
+      });
+
+      // Generate filename
+      const filename = viewMode === 'weekly' 
+        ? `tijdregistratie-${employeeName.replace(/\s+/g, '-')}-week-${getWeekNumber(currentWeekStart)}-${currentWeekStart.getFullYear()}.pdf`
+        : `tijdregistratie-${employeeName.replace(/\s+/g, '-')}-${new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }).replace(/\s+/g, '-').toLowerCase()}.pdf`;
+
+      doc.save(filename);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Er is een fout opgetreden bij het genereren van de PDF. Probeer het opnieuw.');
+    }
   };
 
   const getWeekDates = () => {
@@ -635,6 +829,17 @@ const Employees = () => {
                               →
                             </button>
                           </div>
+                          <div className="header-actions">
+                            <button className="export-button" onClick={exportToPDF} title="Exporteer als PDF">
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M16 13H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M16 17H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M10 9H9H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </button>
+                          </div>
                       </div>
                       <div className="week-totals">
                         <div className="total-item">
@@ -745,6 +950,17 @@ const Employees = () => {
                           </button>
                           <button onClick={() => navigateMonth(1)} className="nav-button nav-arrow">
                             →
+                          </button>
+                        </div>
+                        <div className="header-actions">
+                          <button className="export-button" onClick={exportToPDF} title="Exporteer als PDF">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M16 13H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M16 17H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M10 9H9H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
                           </button>
                         </div>
                       </div>

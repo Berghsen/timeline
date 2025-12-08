@@ -751,72 +751,116 @@ const Timeline = () => {
     doc.text(`Zondaguren: ${Math.floor(stats.sundayHours / 60)}u ${stats.sundayHours % 60}m`, 14, yPos);
     yPos += 10;
 
-    // Prepare table data
+    // Prepare table data - include ALL days, not just days with entries
     const tableData = [];
-    const sortedEntries = [...entriesToExport].sort((a, b) => {
-      if (a.date !== b.date) {
-        return a.date.localeCompare(b.date);
+    let allDates = [];
+    
+    if (viewMode === 'weekly') {
+      // Get all 7 days of the week
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(currentWeekStart);
+        date.setDate(date.getDate() + i);
+        allDates.push(formatDateLocal(date));
       }
-      return (a.start_time || '').localeCompare(b.start_time || '');
-    });
-
-    sortedEntries.forEach(entry => {
-      const date = new Date(entry.date + 'T00:00:00');
-      const dateStr = date.toLocaleDateString('nl-NL', { weekday: 'short', day: '2-digit', month: 'short' });
-      
-      let status = '';
-      if (entry.recup) status = 'Recup';
-      else if (entry.verlof) status = 'Verlof';
-      else if (entry.ziek) status = 'Ziek';
-      else if (entry.niet_gewerkt) status = 'Niet gewerkt';
-      
-      let timeRange = '';
-      let duration = '';
-      if (entry.start_time && entry.end_time) {
-        timeRange = `${entry.start_time} - ${entry.end_time}`;
-        const startParts = entry.start_time.split(':').map(Number);
-        const endParts = entry.end_time.split(':').map(Number);
-        let startMinutes = startParts[0] * 60 + startParts[1];
-        let endMinutes = endParts[0] * 60 + endParts[1];
-        if (endMinutes <= startMinutes) {
-          endMinutes += 24 * 60;
-        }
-        const dur = endMinutes - startMinutes;
-        duration = `${Math.floor(dur / 60)}u ${dur % 60}m`;
-      }
-      
-      tableData.push([
-        dateStr,
-        timeRange || status || '-',
-        duration || '-',
-        entry.comment || '',
-        entry.bonnummer || '',
-        entry.rechtstreeks ? 'Ja' : 'Nee'
-      ]);
-    });
-
-    // Add table
-    if (tableData.length > 0) {
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Datum', 'Tijd/Status', 'Duur', 'Opmerking', 'Bonnummer', 'Rechtstreeks']],
-        body: tableData,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
-        columnStyles: {
-          0: { cellWidth: 30 },
-          1: { cellWidth: 30 },
-          2: { cellWidth: 20 },
-          3: { cellWidth: 50 },
-          4: { cellWidth: 25 },
-          5: { cellWidth: 25 }
-        },
-        margin: { left: 14, right: 14 }
-      });
     } else {
-      doc.setFontSize(10);
-      doc.text('Geen registraties gevonden voor deze periode.', 14, yPos);
+      // Get all days of the month
+      const firstDay = new Date(currentYear, currentMonth, 1);
+      const lastDay = new Date(currentYear, currentMonth + 1, 0);
+      const dates = [];
+      const startDate = new Date(firstDay);
+      while (startDate <= lastDay) {
+        dates.push(formatDateLocal(startDate));
+        startDate.setDate(startDate.getDate() + 1);
+      }
+      allDates = dates;
     }
+    
+    // Create a map of entries by date for quick lookup
+    const entriesByDate = {};
+    entriesToExport.forEach(entry => {
+      if (!entriesByDate[entry.date]) {
+        entriesByDate[entry.date] = [];
+      }
+      entriesByDate[entry.date].push(entry);
+    });
+    
+    // Process all dates, including those without entries
+    allDates.forEach(dateStr => {
+      const date = new Date(dateStr + 'T00:00:00');
+      const dateFormatted = date.toLocaleDateString('nl-NL', { weekday: 'short', day: '2-digit', month: 'short' });
+      
+      const dayEntries = entriesByDate[dateStr] || [];
+      
+      if (dayEntries.length === 0) {
+        // No entries for this day
+        tableData.push([
+          dateFormatted,
+          '-',
+          '-',
+          '',
+          '',
+          'Nee'
+        ]);
+      } else {
+        // Process all entries for this day
+        const sortedDayEntries = [...dayEntries].sort((a, b) => {
+          return (a.start_time || '').localeCompare(b.start_time || '');
+        });
+        
+        sortedDayEntries.forEach((entry, index) => {
+          let status = '';
+          if (entry.recup) status = 'Recup';
+          else if (entry.verlof) status = 'Verlof';
+          else if (entry.ziek) status = 'Ziek';
+          else if (entry.niet_gewerkt) status = 'Niet gewerkt';
+          
+          let timeRange = '';
+          let duration = '';
+          if (entry.start_time && entry.end_time) {
+            timeRange = `${entry.start_time} - ${entry.end_time}`;
+            const startParts = entry.start_time.split(':').map(Number);
+            const endParts = entry.end_time.split(':').map(Number);
+            let startMinutes = startParts[0] * 60 + startParts[1];
+            let endMinutes = endParts[0] * 60 + endParts[1];
+            if (endMinutes <= startMinutes) {
+              endMinutes += 24 * 60;
+            }
+            const dur = endMinutes - startMinutes;
+            duration = `${Math.floor(dur / 60)}u ${dur % 60}m`;
+          }
+          
+          // If multiple entries for same day, only show date on first row
+          const displayDate = index === 0 ? dateFormatted : '';
+          
+          tableData.push([
+            displayDate,
+            timeRange || status || '-',
+            duration || '-',
+            entry.comment || '',
+            entry.bonnummer || '',
+            entry.rechtstreeks ? 'Ja' : 'Nee'
+          ]);
+        });
+      }
+    });
+
+    // Add table (always show table, even if empty, since we include all days)
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Datum', 'Tijd/Status', 'Duur', 'Opmerking', 'Bonnummer', 'Rechtstreeks']],
+      body: tableData,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 50 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 25 }
+      },
+      margin: { left: 14, right: 14 }
+    });
 
     // Generate filename
     const filename = viewMode === 'weekly' 

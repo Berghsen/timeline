@@ -350,12 +350,23 @@
 }
 
 .weekly-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
   align-items: center;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
   gap: 1rem;
+}
+
+.weekly-header .week-title {
+  justify-self: start;
+}
+
+.weekly-header .week-navigation {
+  justify-self: center;
+}
+
+.weekly-header .header-actions {
+  justify-self: end;
 }
 
 .week-title {
@@ -383,6 +394,42 @@
 .month-navigation .nav-button.today {
   flex: 1;
   margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.export-button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: #667eea;
+  color: white;
+  border: 1px solid #667eea;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.export-button svg {
+  width: 20px;
+  height: 20px;
+  stroke: white;
+}
+
+.export-button:hover {
+  background: #5568d3;
+  border-color: #5568d3;
+  transform: scale(1.05);
 }
 
 .nav-button {
@@ -650,12 +697,23 @@
 }
 
 .monthly-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
   align-items: center;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
   gap: 1rem;
+}
+
+.monthly-header .month-title {
+  justify-self: start;
+}
+
+.monthly-header .month-navigation {
+  justify-self: center;
+}
+
+.monthly-header .header-actions {
+  justify-self: end;
 }
 
 .month-title {
@@ -787,12 +845,22 @@
   }
 
   .weekly-header {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .weekly-header .week-title,
+  .weekly-header .week-navigation,
+  .weekly-header .header-actions {
+    justify-self: stretch;
   }
 
   .week-navigation {
     justify-content: center;
+  }
+
+  .weekly-header .header-actions {
+    justify-self: flex-end;
   }
 }
 
@@ -1025,8 +1093,18 @@
   }
 
   .monthly-header {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 0.75rem;
+  }
+
+  .monthly-header .month-title,
+  .monthly-header .month-navigation,
+  .monthly-header .header-actions {
+    justify-self: stretch;
+  }
+
+  .monthly-header .header-actions {
+    justify-self: flex-end;
   }
 
   .week-navigation,
