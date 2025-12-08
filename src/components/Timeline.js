@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import './Timeline.css';
 
 const Timeline = () => {
@@ -662,6 +664,150 @@ const Timeline = () => {
     setSelectedDate(formatDateLocal(new Date()));
   };
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let yPos = 20;
+
+    // Get user name
+    const userName = user?.profile?.full_name || user?.email || 'Onbekend';
+
+    // Header
+    doc.setFontSize(18);
+    doc.text('Tijdregistratie', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    doc.setFontSize(12);
+    doc.text(`Medewerker: ${userName}`, 14, yPos);
+    yPos += 8;
+
+    let entriesToExport, periodTitle, totalMinutes, stats;
+    
+    if (viewMode === 'weekly') {
+      entriesToExport = weekEntries;
+      periodTitle = getWeekTitle();
+      totalMinutes = getWeekTotal();
+      
+      // Calculate week stats
+      const weekEnd = new Date(currentWeekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      const workedDays = new Set(
+        weekEntries
+          .filter(entry => !entry.niet_gewerkt && !entry.verlof && !entry.ziek && !entry.recup)
+          .map(entry => entry.date)
+      ).size;
+      
+      stats = {
+        totalHours: totalMinutes,
+        totalDays: workedDays,
+        nightHours: calculateNightHours(weekEntries),
+        sundayHours: calculateSundayHours(weekEntries)
+      };
+    } else {
+      entriesToExport = monthEntries.filter(entry => {
+        const entryDate = new Date(entry.date + 'T00:00:00');
+        return entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear;
+      });
+      periodTitle = new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
+      stats = getMonthStats();
+      totalMinutes = stats.totalHours;
+    }
+
+    doc.setFontSize(11);
+    doc.text(`Periode: ${periodTitle}`, 14, yPos);
+    yPos += 8;
+
+    // Summary stats
+    doc.setFontSize(10);
+    doc.text(`Totaal gewerkte uren: ${Math.floor(totalMinutes / 60)}u ${totalMinutes % 60}m`, 14, yPos);
+    yPos += 6;
+    
+    if (viewMode === 'monthly') {
+      doc.text(`Totaal gewerkte dagen: ${stats.totalDays}`, 14, yPos);
+      yPos += 6;
+    }
+    
+    doc.text(`Nachturen (1:00-6:00): ${Math.floor(stats.nightHours / 60)}u ${stats.nightHours % 60}m`, 14, yPos);
+    yPos += 6;
+    doc.text(`Zondaguren: ${Math.floor(stats.sundayHours / 60)}u ${stats.sundayHours % 60}m`, 14, yPos);
+    yPos += 10;
+
+    // Prepare table data
+    const tableData = [];
+    const sortedEntries = [...entriesToExport].sort((a, b) => {
+      if (a.date !== b.date) {
+        return a.date.localeCompare(b.date);
+      }
+      return (a.start_time || '').localeCompare(b.start_time || '');
+    });
+
+    sortedEntries.forEach(entry => {
+      const date = new Date(entry.date + 'T00:00:00');
+      const dateStr = date.toLocaleDateString('nl-NL', { weekday: 'short', day: '2-digit', month: 'short' });
+      
+      let status = '';
+      if (entry.recup) status = 'Recup';
+      else if (entry.verlof) status = 'Verlof';
+      else if (entry.ziek) status = 'Ziek';
+      else if (entry.niet_gewerkt) status = 'Niet gewerkt';
+      
+      let timeRange = '';
+      let duration = '';
+      if (entry.start_time && entry.end_time) {
+        timeRange = `${entry.start_time} - ${entry.end_time}`;
+        const startParts = entry.start_time.split(':').map(Number);
+        const endParts = entry.end_time.split(':').map(Number);
+        let startMinutes = startParts[0] * 60 + startParts[1];
+        let endMinutes = endParts[0] * 60 + endParts[1];
+        if (endMinutes <= startMinutes) {
+          endMinutes += 24 * 60;
+        }
+        const dur = endMinutes - startMinutes;
+        duration = `${Math.floor(dur / 60)}u ${dur % 60}m`;
+      }
+      
+      tableData.push([
+        dateStr,
+        timeRange || status || '-',
+        duration || '-',
+        entry.comment || '',
+        entry.bonnummer || '',
+        entry.rechtstreeks ? 'Ja' : 'Nee'
+      ]);
+    });
+
+    // Add table
+    if (tableData.length > 0) {
+      doc.autoTable({
+        startY: yPos,
+        head: [['Datum', 'Tijd/Status', 'Duur', 'Opmerking', 'Bonnummer', 'Rechtstreeks']],
+        body: tableData,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 50 },
+          4: { cellWidth: 25 },
+          5: { cellWidth: 25 }
+        },
+        margin: { left: 14, right: 14 }
+      });
+    } else {
+      doc.setFontSize(10);
+      doc.text('Geen registraties gevonden voor deze periode.', 14, yPos);
+    }
+
+    // Generate filename
+    const filename = viewMode === 'weekly' 
+      ? `tijdregistratie-week-${getWeekNumber(currentWeekStart)}-${currentWeekStart.getFullYear()}.pdf`
+      : `tijdregistratie-${new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }).replace(/\s+/g, '-').toLowerCase()}.pdf`;
+
+    doc.save(filename);
+  };
+
   const getEntriesForDate = (date) => {
     const dateStr = formatDateLocal(date);
     if (viewMode === 'weekly') {
@@ -847,9 +993,14 @@ const Timeline = () => {
                 →
               </button>
             </div>
-            <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
-              +
-            </button>
+            <div className="header-actions">
+              <button className="export-button" onClick={exportToPDF} title="Exporteer als PDF">
+                📄
+              </button>
+              <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
+                +
+              </button>
+            </div>
           </div>
           <div className="week-title">{getWeekTitle()}</div>
           <div className="week-total">
@@ -1006,9 +1157,14 @@ const Timeline = () => {
                 →
               </button>
             </div>
-            <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
-              +
-            </button>
+            <div className="header-actions">
+              <button className="export-button" onClick={exportToPDF} title="Exporteer als PDF">
+                📄
+              </button>
+              <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
+                +
+              </button>
+            </div>
           </div>
           <div className="month-title">
             {new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}

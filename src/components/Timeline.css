@@ -373,7 +373,14 @@
   margin-bottom: 1rem;
 }
 
-.add-entry-button {
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.add-entry-button,
+.export-button {
   width: 48px;
   height: 48px;
   padding: 0;
@@ -392,9 +399,22 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.export-button {
+  font-size: 1.2rem;
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
 .add-entry-button:hover {
   background: #e8e8e8;
   border-color: #bbb;
+  transform: scale(1.05);
+}
+
+.export-button:hover {
+  background: #5568d3;
+  border-color: #5568d3;
   transform: scale(1.05);
 }
 
@@ -622,43 +642,48 @@
 }
 
 .weekly-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
   align-items: center;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
   gap: 1rem;
 }
 
 .weekly-header .view-mode-toggle {
-  order: 1;
+  justify-self: start;
 }
 
 .weekly-header .week-navigation {
-  order: 2;
+  justify-self: center;
+}
+
+.weekly-header .header-actions,
+.monthly-header .header-actions {
+  justify-self: end;
+  margin-bottom: 0;
 }
 
 .weekly-header .add-entry-button,
-.monthly-header .add-entry-button {
-  order: 3;
+.monthly-header .add-entry-button,
+.weekly-header .export-button,
+.monthly-header .export-button {
   margin-bottom: 0;
 }
 
 .monthly-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
   align-items: center;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
   gap: 1rem;
 }
 
 .monthly-header .view-mode-toggle {
-  order: 1;
+  justify-self: start;
 }
 
 .monthly-header .month-navigation {
-  order: 2;
+  justify-self: center;
 }
 
 .month-title {
@@ -987,11 +1012,18 @@
     text-align: center;
   }
 
-  .weekly-header .add-entry-button,
-  .monthly-header .add-entry-button {
+  .weekly-header .header-actions,
+  .monthly-header .header-actions {
     order: 3;
     align-self: flex-end;
     margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .weekly-header .add-entry-button,
+  .monthly-header .add-entry-button,
+  .weekly-header .export-button,
+  .monthly-header .export-button {
     margin-bottom: 0;
   }
 
@@ -1373,6 +1405,11 @@
 
   .month-calendar {
     grid-template-columns: 1fr;
+  }
+
+  .week-calendar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
 
   .calendar-day {
