@@ -792,6 +792,7 @@ const Timeline = () => {
               const totalMinutes = getTotalForDate(date);
               const dayName = date.toLocaleDateString('nl-NL', { weekday: 'short' });
               const dayNumber = date.getDate();
+              const monthAbbr = date.toLocaleDateString('nl-NL', { month: 'short' }).toUpperCase();
               const isCurrentDay = isToday(date);
               const isSelectedDay = isSelected(date);
               const firstEntry = dateEntries.length > 0 ? dateEntries[0] : null;
@@ -809,8 +810,8 @@ const Timeline = () => {
                   onClick={() => handleDateClick(date)}
                 >
                   <div className="day-header">
-                    <div className="day-name">{dayName}</div>
-                    <div className="day-number">{dayNumber}</div>
+                    <div className="day-name">{dayName} - {dayNumber} {monthAbbr}</div>
+                    <div className="day-number" style={{ display: 'none' }}>{dayNumber}</div>
                   </div>
                   <div className="day-entries">
                     {dateEntries.length > 0 ? (
@@ -824,18 +825,30 @@ const Timeline = () => {
                                             firstEntry.recup ? 'status-recup' : 
                                             'status-gewerkt';
                           
+                          // Determine display text - check recup FIRST, then other statuses, then time ranges
+                          // "Gewerkt" should never be shown as text - it's only a green colored state
+                          let displayText = '';
+                          if (firstEntry.recup) {
+                            displayText = 'Recup';
+                          } else if (firstEntry.verlof) {
+                            displayText = 'Verlof';
+                          } else if (firstEntry.ziek) {
+                            displayText = 'Ziek';
+                          } else if (firstEntry.niet_gewerkt) {
+                            displayText = 'Niet gewerkt';
+                          } else if (firstEntry.start_time && firstEntry.end_time) {
+                            displayText = `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}`;
+                          }
+                          // If no display text, don't show anything (the green color from statusClass will indicate "gewerkt")
+                          
                           return (
                             <>
-                              <div className={`day-status ${statusClass}`}>
-                                {firstEntry.verlof ? 'Verlof' : 
-                                 firstEntry.ziek ? 'Ziek' : 
-                                 firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
-                                 firstEntry.recup ? 'Recup' : 
-                                 firstEntry.start_time && firstEntry.end_time ? 
-                                   `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
-                                   'Gewerkt'}
-                              </div>
-                              {!hasStatus && (
+                              {displayText && (
+                                <div className={`day-status ${statusClass}`}>
+                                  {displayText}
+                                </div>
+                              )}
+                              {!hasStatus && firstEntry.start_time && firstEntry.end_time && (
                                 <div className="day-total">
                                   {Math.floor(totalMinutes / 60)}u {totalMinutes % 60}m
                                 </div>
@@ -907,6 +920,7 @@ const Timeline = () => {
               const totalMinutes = getTotalForDate(date);
               const dayName = date.toLocaleDateString('nl-NL', { weekday: 'short' });
               const dayNumber = date.getDate();
+              const monthAbbr = date.toLocaleDateString('nl-NL', { month: 'short' }).toUpperCase();
               const isCurrentDay = isToday(date);
 
               const firstEntry = dateEntries.length > 0 ? dateEntries[0] : null;
@@ -924,8 +938,8 @@ const Timeline = () => {
                   onClick={() => handleDateClick(date)}
                 >
                   <div className="day-header">
-                    <div className="day-name">{dayName}</div>
-                    <div className="day-number">{dayNumber}</div>
+                    <div className="day-name">{dayName} - {dayNumber} {monthAbbr}</div>
+                    <div className="day-number" style={{ display: 'none' }}>{dayNumber}</div>
                   </div>
                   <div className="day-entries">
                     {dateEntries.length > 0 ? (
@@ -933,17 +947,30 @@ const Timeline = () => {
                         {(() => {
                           const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
                           
+                          // Determine display text - check recup FIRST, then other statuses, then time ranges
+                          // "Gewerkt" should never be shown as text - it's only a green colored state
+                          let displayText = '';
+                          if (firstEntry.recup) {
+                            displayText = 'Recup';
+                          } else if (firstEntry.verlof) {
+                            displayText = 'Verlof';
+                          } else if (firstEntry.ziek) {
+                            displayText = 'Ziek';
+                          } else if (firstEntry.niet_gewerkt) {
+                            displayText = 'Niet gewerkt';
+                          } else if (firstEntry.start_time && firstEntry.end_time) {
+                            displayText = `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}`;
+                          }
+                          // If no display text, don't show anything (the green color from statusClass will indicate "gewerkt")
+                          
                           return (
                             <>
-                              <div className={`day-status ${statusClass}`}>
-                                {firstEntry.verlof ? 'Verlof' : 
-                                 firstEntry.ziek ? 'Ziek' : 
-                                 firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
-                                 firstEntry.start_time && firstEntry.end_time ? 
-                                   `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
-                                   'Gewerkt'}
-                              </div>
-                              {!hasStatus && (
+                              {displayText && (
+                                <div className={`day-status ${statusClass}`}>
+                                  {displayText}
+                                </div>
+                              )}
+                              {!hasStatus && firstEntry.start_time && firstEntry.end_time && (
                                 <div className="day-total">
                                   {Math.floor(totalMinutes / 60)}u {totalMinutes % 60}m
                                 </div>

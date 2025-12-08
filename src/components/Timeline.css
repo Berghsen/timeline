@@ -1063,7 +1063,7 @@
     max-height: 100dvh;
     padding: 1.25rem;
     padding-top: 1.5rem;
-    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
     margin: 0;
     border-radius: 0;
     box-sizing: border-box;
@@ -1077,6 +1077,13 @@
     background: white;
     z-index: 1002;
     pointer-events: auto;
+  }
+  
+  .entry-modal-content form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 
   .form-header {
@@ -1232,7 +1239,7 @@
   .entry-modal-content .form-actions {
     margin-top: auto;
     padding-top: 1.25rem;
-    padding-bottom: 1.25rem;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px) + 1rem);
     border-top: 2px solid #eee;
     position: sticky;
     bottom: 0;
@@ -1240,6 +1247,7 @@
     z-index: 10;
     flex-shrink: 0;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
   }
 
   .form-actions {
@@ -1273,11 +1281,11 @@
   }
 
   .add-entry-button {
-    width: 100%;
-    padding: 1rem;
-    font-size: 1.5rem;
+    width: 48px;
+    height: 48px;
+    padding: 0;
     margin-top: 0.5rem;
-    min-height: 48px;
+    flex-shrink: 0;
   }
 
   .month-header {
@@ -1360,12 +1368,25 @@
     border-radius: 0;
     margin: 0;
     padding: 0.75rem;
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .entry-modal-content form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  
+  .entry-modal-content .form-actions {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 1rem);
   }
 
   .entry-modal-content .form-row {
