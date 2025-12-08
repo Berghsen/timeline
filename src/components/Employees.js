@@ -78,6 +78,14 @@ const Employees = () => {
     }
   }, [selectedEmployee, currentWeekStart, currentMonth, currentYear, viewMode]);
 
+  // Set the first employee (oldest) as selected by default when employees are first loaded
+  useEffect(() => {
+    if (employees.length > 0 && !selectedEmployee) {
+      setSelectedEmployee(employees[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employees.length]); // Only run when employees list length changes (initial load)
+
   const fetchEmployees = async () => {
     setLoading(true);
     try {
@@ -94,7 +102,8 @@ const Employees = () => {
         },
       });
 
-      setEmployees(Array.isArray(data) ? data : []);
+      const employeesList = Array.isArray(data) ? data : [];
+      setEmployees(employeesList);
     } catch (error) {
       console.error('Error fetching employees:', error);
       setEmployees([]);

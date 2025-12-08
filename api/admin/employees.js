@@ -59,11 +59,12 @@ export default async function handler(req, res) {
     }
 
     // Get all employees (non-admin users) - using service role key so RLS is bypassed
+    // Order by created_at ascending so oldest employees are first
     let { data: employees, error } = await supabase
       .from('user_profiles')
       .select('id, email, full_name, travel_time_minutes, role, created_at')
       .neq('role', 'admin')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: true });
 
     // If travel_time_minutes column doesn't exist, the query will fail
     // Try without it and add default values
@@ -72,7 +73,7 @@ export default async function handler(req, res) {
         .from('user_profiles')
         .select('id, email, full_name, role, created_at')
         .neq('role', 'admin')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
       
       if (!basicError && employeesBasic) {
         employees = employeesBasic.map(emp => ({ ...emp, travel_time_minutes: 0 }));
