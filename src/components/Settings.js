@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import './Settings.css';
 
 const Settings = () => {
-  const { supabase, user } = useAuth();
+  const { supabase, user, refreshProfile } = useAuth();
   const [fullName, setFullName] = useState(user?.profile?.full_name || '');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -11,6 +11,13 @@ const Settings = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Update local state when user profile changes
+  useEffect(() => {
+    if (user?.profile?.full_name) {
+      setFullName(user.profile.full_name);
+    }
+  }, [user?.profile?.full_name]);
 
   const handleUpdateName = async (e) => {
     e.preventDefault();
@@ -25,6 +32,9 @@ const Settings = () => {
         .eq('id', user.id);
 
       if (error) throw error;
+
+      // Refresh the user profile in AuthContext to update the UI
+      await refreshProfile();
 
       setSuccess('Naam succesvol bijgewerkt');
       setTimeout(() => setSuccess(''), 3000);

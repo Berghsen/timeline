@@ -257,11 +257,10 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
     <div className="absence-certificates-container">
       <div className="absence-certificates-header">
         <h1>Afwezigheidsattesten</h1>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div className="header-actions">
           <button
             className="refresh-button"
             onClick={fetchCertificates}
-            style={{ padding: '0.5rem 1rem', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer' }}
           >
             🔄 Verversen
           </button>

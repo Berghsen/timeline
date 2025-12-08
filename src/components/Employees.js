@@ -584,17 +584,16 @@ const Employees = () => {
                                     {(() => {
                                       const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
                                       
-                                      // Determine display text - check status flags first, then time ranges
-                                      // Use explicit boolean checks to handle string "true" or boolean true
+                                      // Determine display text - check recup FIRST to ensure it takes priority
                                       let displayText = 'Gewerkt';
-                                      if (firstEntry.verlof === true || firstEntry.verlof === 'true' || firstEntry.verlof === 1) {
-                                        displayText = 'Verlof';
-                                      } else if (firstEntry.ziek === true || firstEntry.ziek === 'true' || firstEntry.ziek === 1) {
-                                        displayText = 'Ziek';
-                                      } else if (firstEntry.niet_gewerkt === true || firstEntry.niet_gewerkt === 'true' || firstEntry.niet_gewerkt === 1) {
-                                        displayText = 'Niet gewerkt';
-                                      } else if (firstEntry.recup === true || firstEntry.recup === 'true' || firstEntry.recup === 1) {
+                                      if (firstEntry.recup) {
                                         displayText = 'Recup';
+                                      } else if (firstEntry.verlof) {
+                                        displayText = 'Verlof';
+                                      } else if (firstEntry.ziek) {
+                                        displayText = 'Ziek';
+                                      } else if (firstEntry.niet_gewerkt) {
+                                        displayText = 'Niet gewerkt';
                                       } else if (firstEntry.start_time && firstEntry.end_time) {
                                         displayText = `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}`;
                                       }
@@ -715,22 +714,30 @@ const Employees = () => {
                                 {dateEntries.length > 0 ? (
                                   <>
                                     {(() => {
-                                      const firstEntry = dateEntries[0];
-                                      const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
-                                      const statusClass = firstEntry.verlof ? 'status-verlof' : 
-                                                        firstEntry.ziek ? 'status-ziek' : 
-                                                        firstEntry.niet_gewerkt ? 'status-niet-gewerkt' : 
-                                                        firstEntry.recup ? 'status-recup' : 
+                                      // Use the same firstEntryForClass that's used for the color (which works)
+                                      const entry = firstEntryForClass;
+                                      if (!entry) return null;
+                                      
+                                      const hasStatus = entry.niet_gewerkt || entry.verlof || entry.ziek || entry.recup;
+                                      const statusClass = entry.verlof ? 'status-verlof' : 
+                                                        entry.ziek ? 'status-ziek' : 
+                                                        entry.niet_gewerkt ? 'status-niet-gewerkt' : 
+                                                        entry.recup ? 'status-recup' : 
                                                         'status-gewerkt';
                                       
-                                      // Determine display text - use EXACT same logic as statusClass (which works)
-                                      const displayText = firstEntry.verlof ? 'Verlof' : 
-                                                         firstEntry.ziek ? 'Ziek' : 
-                                                         firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
-                                                         firstEntry.recup ? 'Recup' : 
-                                                         firstEntry.start_time && firstEntry.end_time ? 
-                                                           `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
-                                                           'Gewerkt';
+                                      // Determine display text - use EXACT same variable and logic as statusClass
+                                      let displayText = 'Gewerkt';
+                                      if (entry.recup) {
+                                        displayText = 'Recup';
+                                      } else if (entry.verlof) {
+                                        displayText = 'Verlof';
+                                      } else if (entry.ziek) {
+                                        displayText = 'Ziek';
+                                      } else if (entry.niet_gewerkt) {
+                                        displayText = 'Niet gewerkt';
+                                      } else if (entry.start_time && entry.end_time) {
+                                        displayText = `${entry.start_time.substring(0, 5)} - ${entry.end_time.substring(0, 5)}`;
+                                      }
                                       
                                       return (
                                         <>
