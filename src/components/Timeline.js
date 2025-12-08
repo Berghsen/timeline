@@ -334,6 +334,90 @@ const Timeline = () => {
     }, 0);
   };
 
+  // Calculate night hours (1 AM - 6 AM)
+  const calculateNightHours = (entries) => {
+    return entries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time || entry.niet_gewerkt || entry.verlof || entry.ziek || entry.recup) {
+        return total;
+      }
+      
+      const startParts = entry.start_time.split(':').map(Number);
+      const endParts = entry.end_time.split(':').map(Number);
+      let startMinutes = startParts[0] * 60 + startParts[1];
+      let endMinutes = endParts[0] * 60 + endParts[1];
+      
+      // Handle end time after midnight
+      if (endMinutes <= startMinutes) {
+        endMinutes += 24 * 60;
+      }
+      
+      // Night hours are between 1 AM (60 minutes) and 6 AM (360 minutes)
+      const nightStart = 1 * 60; // 1 AM
+      const nightEnd = 6 * 60;   // 6 AM
+      
+      let nightMinutes = 0;
+      
+      // Check if the entry spans the night period
+      // Case 1: Entry starts before 1 AM and ends after 6 AM (spans entire night)
+      if (startMinutes < nightStart && endMinutes > nightEnd) {
+        nightMinutes = nightEnd - nightStart;
+      }
+      // Case 2: Entry starts before 1 AM and ends during night (1 AM - 6 AM)
+      else if (startMinutes < nightStart && endMinutes > nightStart && endMinutes <= nightEnd) {
+        nightMinutes = endMinutes - nightStart;
+      }
+      // Case 3: Entry starts during night and ends after 6 AM
+      else if (startMinutes >= nightStart && startMinutes < nightEnd && endMinutes > nightEnd) {
+        nightMinutes = nightEnd - startMinutes;
+      }
+      // Case 4: Entry is entirely within night period
+      else if (startMinutes >= nightStart && endMinutes <= nightEnd) {
+        nightMinutes = endMinutes - startMinutes;
+      }
+      // Case 5: Entry spans midnight and includes night hours
+      else if (startMinutes > nightEnd && endMinutes > 24 * 60) {
+        // Entry started in previous day and ended in next day
+        const nextDayEnd = endMinutes - (24 * 60);
+        if (nextDayEnd <= nightEnd) {
+          nightMinutes = nextDayEnd - nightStart;
+        } else {
+          nightMinutes = nightEnd - nightStart;
+        }
+      }
+      
+      return total + nightMinutes;
+    }, 0);
+  };
+
+  // Calculate Sunday hours
+  const calculateSundayHours = (entries) => {
+    return entries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time || entry.niet_gewerkt || entry.verlof || entry.ziek || entry.recup) {
+        return total;
+      }
+      
+      // Check if the entry date is a Sunday
+      const entryDate = new Date(entry.date + 'T00:00:00');
+      const dayOfWeek = entryDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      
+      if (dayOfWeek !== 0) {
+        return total; // Not a Sunday
+      }
+      
+      const startParts = entry.start_time.split(':').map(Number);
+      const endParts = entry.end_time.split(':').map(Number);
+      let startMinutes = startParts[0] * 60 + startParts[1];
+      let endMinutes = endParts[0] * 60 + endParts[1];
+      
+      // Handle end time after midnight
+      if (endMinutes <= startMinutes) {
+        endMinutes += 24 * 60;
+      }
+      
+      return total + (endMinutes - startMinutes);
+    }, 0);
+  };
+
   const navigateDate = (direction) => {
     const date = new Date(selectedDate);
     date.setDate(date.getDate() + direction);
@@ -422,6 +506,9 @@ const Timeline = () => {
     });
     
     const totalMinutes = calculateTotalDuration(monthEntriesForStats);
+    const nightMinutes = calculateNightHours(monthEntriesForStats);
+    const sundayMinutes = calculateSundayHours(monthEntriesForStats);
+    
     // Only count days that have actual work (not niet_gewerkt, verlof, ziek, or recup)
     const workedDays = new Set(
       monthEntriesForStats
@@ -436,7 +523,9 @@ const Timeline = () => {
     return {
       totalHours: totalMinutes,
       totalDays: workedDays,
-      monthName: monthName
+      monthName: monthName,
+      nightHours: nightMinutes || 0,
+      sundayHours: sundayMinutes || 0
     };
   };
 
@@ -915,11 +1004,31 @@ const Timeline = () => {
             </div>
             <div className="stat-card">
               <div className="stat-label">Nachturen (1:00 - 6:00)</div>
-              <div className="stat-value">{Math.floor(getMonthStats().nightHours / 60)}u {getMonthStats().nightHours % 60}m</div>
+              <div className="stat-value">
+                {(() => {
+                  const stats = getMonthStats();
+                  const hours = Math.floor(stats.nightHours / 60);
+                  const minutes = stats.nightHours % 60;
+                  if (stats.nightHours === 0) {
+                    return '0u 0m';
+                  }
+                  return `${hours}u ${minutes}m`;
+                })()}
+              </div>
             </div>
             <div className="stat-card">
               <div className="stat-label">Zondaguren</div>
-              <div className="stat-value">{Math.floor(getMonthStats().sundayHours / 60)}u {getMonthStats().sundayHours % 60}m</div>
+              <div className="stat-value">
+                {(() => {
+                  const stats = getMonthStats();
+                  const hours = Math.floor(stats.sundayHours / 60);
+                  const minutes = stats.sundayHours % 60;
+                  if (stats.sundayHours === 0) {
+                    return '0u 0m';
+                  }
+                  return `${hours}u ${minutes}m`;
+                })()}
+              </div>
             </div>
           </div>
           <div className="month-calendar">
