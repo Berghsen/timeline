@@ -236,6 +236,80 @@ const Employees = () => {
     }, 0);
   };
 
+  // Calculate night hours (1 AM - 6 AM)
+  const calculateNightHours = (entries) => {
+    return entries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time || entry.niet_gewerkt || entry.verlof || entry.ziek || entry.recup) {
+        return total;
+      }
+      
+      const startParts = entry.start_time.split(':').map(Number);
+      const endParts = entry.end_time.split(':').map(Number);
+      let startMinutes = startParts[0] * 60 + startParts[1];
+      let endMinutes = endParts[0] * 60 + endParts[1];
+      
+      // Handle end time after midnight
+      if (endMinutes <= startMinutes) {
+        endMinutes += 24 * 60;
+      }
+      
+      // Night hours are between 1 AM (60 minutes) and 6 AM (360 minutes)
+      const nightStart = 1 * 60; // 1 AM
+      const nightEnd = 6 * 60;   // 6 AM
+      
+      let nightMinutes = 0;
+      
+      // Check if the entry spans the night period
+      if (startMinutes < nightStart && endMinutes > nightEnd) {
+        nightMinutes = nightEnd - nightStart;
+      } else if (startMinutes < nightStart && endMinutes > nightStart && endMinutes <= nightEnd) {
+        nightMinutes = endMinutes - nightStart;
+      } else if (startMinutes >= nightStart && startMinutes < nightEnd && endMinutes > nightEnd) {
+        nightMinutes = nightEnd - startMinutes;
+      } else if (startMinutes >= nightStart && endMinutes <= nightEnd) {
+        nightMinutes = endMinutes - startMinutes;
+      } else if (startMinutes > nightEnd && endMinutes > 24 * 60) {
+        const nextDayEnd = endMinutes - (24 * 60);
+        if (nextDayEnd <= nightEnd) {
+          nightMinutes = nextDayEnd - nightStart;
+        } else {
+          nightMinutes = nightEnd - nightStart;
+        }
+      }
+      
+      return total + nightMinutes;
+    }, 0);
+  };
+
+  // Calculate Sunday hours
+  const calculateSundayHours = (entries) => {
+    return entries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time || entry.niet_gewerkt || entry.verlof || entry.ziek || entry.recup) {
+        return total;
+      }
+      
+      // Check if the entry date is a Sunday
+      const entryDate = new Date(entry.date + 'T00:00:00');
+      const dayOfWeek = entryDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      
+      if (dayOfWeek !== 0) {
+        return total; // Not a Sunday
+      }
+      
+      const startParts = entry.start_time.split(':').map(Number);
+      const endParts = entry.end_time.split(':').map(Number);
+      let startMinutes = startParts[0] * 60 + startParts[1];
+      let endMinutes = endParts[0] * 60 + endParts[1];
+      
+      // Handle end time after midnight
+      if (endMinutes <= startMinutes) {
+        endMinutes += 24 * 60;
+      }
+      
+      return total + (endMinutes - startMinutes);
+    }, 0);
+  };
+
   const getWeekNumber = (date) => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -388,6 +462,25 @@ const Employees = () => {
       return entry.date >= firstDayStr && entry.date <= lastDayStr;
     });
     
+    // Calculate totals
+    const totalMinutes = monthEntries.reduce((total, entry) => {
+      if (!entry.start_time || !entry.end_time || entry.niet_gewerkt || entry.verlof || entry.ziek || entry.recup) {
+        return total;
+      }
+      const startParts = entry.start_time.split(':').map(Number);
+      const endParts = entry.end_time.split(':').map(Number);
+      let startMinutes = startParts[0] * 60 + startParts[1];
+      let endMinutes = endParts[0] * 60 + endParts[1];
+      let duration = endMinutes - startMinutes;
+      if (duration <= 0) {
+        duration += 24 * 60;
+      }
+      return total + duration;
+    }, 0);
+    
+    const nightMinutes = calculateNightHours(monthEntries);
+    const sundayMinutes = calculateSundayHours(monthEntries);
+    
     // Only count days that have actual work (not niet_gewerkt, verlof, ziek, or recup)
     const workedDays = new Set(
       monthEntries
@@ -401,6 +494,9 @@ const Employees = () => {
     
     return {
       totalDays: workedDays,
+      totalHours: totalMinutes || 0,
+      nightHours: nightMinutes || 0,
+      sundayHours: sundayMinutes || 0,
       monthName: monthName
     };
   };
@@ -667,6 +763,48 @@ const Employees = () => {
                         <div className="stat-card">
                           <div className="stat-label">Gewerkte dagen in {getMonthStats().monthName}</div>
                           <div className="stat-value">{getMonthStats().totalDays} {getMonthStats().totalDays === 1 ? 'dag' : 'dagen'}</div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-label">Totaal gewerkte uren in {getMonthStats().monthName}</div>
+                          <div className="stat-value">
+                            {(() => {
+                              const stats = getMonthStats();
+                              const hours = Math.floor(stats.totalHours / 60);
+                              const minutes = stats.totalHours % 60;
+                              if (stats.totalHours === 0) {
+                                return '0u 0m';
+                              }
+                              return `${hours}u ${minutes}m`;
+                            })()}
+                          </div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-label">Nachturen (1:00 - 6:00)</div>
+                          <div className="stat-value">
+                            {(() => {
+                              const stats = getMonthStats();
+                              const hours = Math.floor(stats.nightHours / 60);
+                              const minutes = stats.nightHours % 60;
+                              if (stats.nightHours === 0) {
+                                return '0u 0m';
+                              }
+                              return `${hours}u ${minutes}m`;
+                            })()}
+                          </div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-label">Zondaguren</div>
+                          <div className="stat-value">
+                            {(() => {
+                              const stats = getMonthStats();
+                              const hours = Math.floor(stats.sundayHours / 60);
+                              const minutes = stats.sundayHours % 60;
+                              if (stats.sundayHours === 0) {
+                                return '0u 0m';
+                              }
+                              return `${hours}u ${minutes}m`;
+                            })()}
+                          </div>
                         </div>
                       </div>
                       <div className="month-calendar">
