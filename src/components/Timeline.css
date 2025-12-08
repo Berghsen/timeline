@@ -12,6 +12,8 @@
   box-sizing: border-box;
   overflow-x: hidden;
   position: relative;
+  min-height: calc(100vh - 4rem);
+  margin-bottom: 2rem;
 }
 
 .timeline-header {
@@ -393,12 +395,13 @@
   font-size: 1.5rem;
   font-weight: 300;
   cursor: pointer;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .export-button {
@@ -437,7 +440,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  z-index: 1001;
+  z-index: 10000;
   padding: 0;
   animation: fadeIn 0.2s;
   overflow-y: auto;
@@ -475,7 +478,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  z-index: 1002;
+  z-index: 10001;
   pointer-events: auto;
 }
 
@@ -1033,7 +1036,11 @@
     order: 3;
     align-self: flex-end;
     margin-top: 0;
-    margin-bottom: 0;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    width: auto;
   }
 
   .weekly-header .add-entry-button,
@@ -1041,6 +1048,14 @@
   .weekly-header .export-button,
   .monthly-header .export-button {
     margin-bottom: 0;
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .export-button svg {
+    width: 18px;
+    height: 18px;
   }
 
   .statistics-section {
@@ -1157,7 +1172,10 @@
     bottom: 0;
     height: 100vh;
     height: 100dvh; /* Use dynamic viewport height for mobile */
-    z-index: 1001;
+    z-index: 10000;
+    touch-action: none;
+    -webkit-overflow-scrolling: none;
+    overscroll-behavior: none;
   }
 
   .entry-modal-content {
@@ -1167,22 +1185,25 @@
     height: 100dvh; /* Use dynamic viewport height for mobile */
     max-height: 100vh;
     max-height: 100dvh;
-    padding: 1.25rem;
-    padding-top: 1.5rem;
-    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    padding: 0;
     margin: 0;
     border-radius: 0;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
     position: relative;
     overscroll-behavior: contain;
     background: white;
-    z-index: 1002;
+    z-index: 10001;
     pointer-events: auto;
+  }
+
+  .entry-modal-content .form-header {
+    padding: 1.25rem;
+    padding-top: 1.5rem;
+    flex-shrink: 0;
+    border-bottom: 1px solid #eee;
   }
   
   .entry-modal-content form {
@@ -1190,6 +1211,10 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1rem;
   }
 
   .form-header {
@@ -1216,10 +1241,10 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    overflow-y: visible;
+    overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 0;
+    padding-bottom: 1rem;
   }
 
   .entry-modal-content .form-row {
@@ -1344,7 +1369,7 @@
 
   .entry-modal-content .form-actions {
     margin-top: auto;
-    padding-top: 1.25rem;
+    padding: 1.25rem;
     padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px) + 1rem);
     border-top: 2px solid #eee;
     position: sticky;
@@ -1384,14 +1409,6 @@
 
   .cancel-button:active {
     transform: scale(0.98);
-  }
-
-  .add-entry-button {
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    margin-top: 0.5rem;
-    flex-shrink: 0;
   }
 
 
@@ -1446,11 +1463,38 @@
     font-size: 0.7rem;
   }
 
+  .header-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .add-entry-button,
+  .export-button {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    font-size: 1.3rem;
+  }
+
+  .export-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
   .entry-modal-overlay {
     padding: 0;
     overflow: hidden;
     height: 100vh;
     height: 100dvh;
+    touch-action: none;
+    -webkit-overflow-scrolling: none;
+    z-index: 10000;
   }
 
   .entry-modal-content {
@@ -1462,15 +1506,18 @@
     max-height: 100dvh;
     border-radius: 0;
     margin: 0;
-    padding: 0.75rem;
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    padding: 0;
     box-sizing: border-box;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
+  }
+
+  .entry-modal-content .form-header {
+    padding: 0.75rem;
+    padding-top: 1rem;
+    flex-shrink: 0;
+    border-bottom: 1px solid #eee;
   }
   
   .entry-modal-content form {
@@ -1478,10 +1525,25 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 0.75rem;
+    padding-bottom: 1rem;
   }
   
   .entry-modal-content .form-actions {
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 1rem);
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px) + 1rem);
+    margin-top: auto;
+    flex-shrink: 0;
+    border-top: 2px solid #eee;
+    background: white;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .entry-modal-content .form-row {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import './Timeline.css';
 
 const Timeline = () => {
@@ -61,10 +61,17 @@ const Timeline = () => {
     if (showForm) {
       // Save current scroll position
       scrollPositionRef.current = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+      // Prevent background scrolling
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollPositionRef.current}px`;
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
+      document.body.style.height = '100%';
+      // Prevent touch scrolling on iOS
+      document.body.style.touchAction = 'none';
+      // Also prevent scrolling on html element
+      document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.height = '100%';
     } else {
       // Restore scroll position
       const scrollY = scrollPositionRef.current;
@@ -72,10 +79,16 @@ const Timeline = () => {
       document.body.style.top = '';
       document.body.style.width = '';
       document.body.style.overflow = '';
+      document.body.style.height = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.height = '';
       // Use requestAnimationFrame to ensure DOM is updated before scrolling
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
+      if (scrollY) {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollY);
+        });
+      }
     }
     return () => {
       // Cleanup on unmount
@@ -84,6 +97,10 @@ const Timeline = () => {
       document.body.style.top = '';
       document.body.style.width = '';
       document.body.style.overflow = '';
+      document.body.style.height = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.height = '';
       if (scrollY) {
         requestAnimationFrame(() => {
           window.scrollTo(0, scrollY);
@@ -780,7 +797,7 @@ const Timeline = () => {
 
     // Add table
     if (tableData.length > 0) {
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Datum', 'Tijd/Status', 'Duur', 'Opmerking', 'Bonnummer', 'Rechtstreeks']],
         body: tableData,
