@@ -201,7 +201,8 @@
 
 .entry-modal-content .form-row {
   grid-template-columns: 1.2fr 1fr 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .status-row {
@@ -210,6 +211,7 @@
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: nowrap;
+  margin-bottom: 0.5rem;
 }
 
 .status-dropdown-wrapper {
@@ -265,7 +267,7 @@
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .form-group label {
@@ -307,7 +309,7 @@
 .form-actions {
   display: flex;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #eee;
   flex-wrap: wrap;
@@ -315,7 +317,7 @@
 
 .entry-modal-content .form-actions {
   margin-top: auto;
-  padding-top: 1.5rem;
+  padding-top: 1rem;
   position: sticky;
   bottom: 0;
   background: white;
@@ -404,6 +406,13 @@
   background: #667eea;
   color: white;
   border-color: #667eea;
+  padding: 0;
+}
+
+.export-button svg {
+  width: 20px;
+  height: 20px;
+  stroke: white;
 }
 
 .add-entry-button:hover {
@@ -459,7 +468,7 @@
   max-width: 600px;
   width: 90%;
   margin: 2rem auto;
-  max-height: 85vh;
+  max-height: 95vh;
   overflow-y: auto;
   animation: slideUp 0.3s;
   box-sizing: border-box;
@@ -468,6 +477,13 @@
   flex-direction: column;
   z-index: 1002;
   pointer-events: auto;
+}
+
+.entry-modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
 }
 
 @keyframes slideUp {
@@ -969,7 +985,7 @@
   }
 
   .week-calendar {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 0.5rem;
   }
 
@@ -1101,7 +1117,7 @@
   }
 
   .week-calendar {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 0.5rem;
   }
 
@@ -1408,7 +1424,7 @@
   }
 
   .week-calendar {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 0.5rem;
   }
 
