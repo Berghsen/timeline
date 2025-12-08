@@ -585,14 +585,15 @@ const Employees = () => {
                                       const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
                                       
                                       // Determine display text - check status flags first, then time ranges
+                                      // Use explicit boolean checks to handle string "true" or boolean true
                                       let displayText = 'Gewerkt';
-                                      if (firstEntry.verlof) {
+                                      if (firstEntry.verlof === true || firstEntry.verlof === 'true' || firstEntry.verlof === 1) {
                                         displayText = 'Verlof';
-                                      } else if (firstEntry.ziek) {
+                                      } else if (firstEntry.ziek === true || firstEntry.ziek === 'true' || firstEntry.ziek === 1) {
                                         displayText = 'Ziek';
-                                      } else if (firstEntry.niet_gewerkt) {
+                                      } else if (firstEntry.niet_gewerkt === true || firstEntry.niet_gewerkt === 'true' || firstEntry.niet_gewerkt === 1) {
                                         displayText = 'Niet gewerkt';
-                                      } else if (firstEntry.recup) {
+                                      } else if (firstEntry.recup === true || firstEntry.recup === 'true' || firstEntry.recup === 1) {
                                         displayText = 'Recup';
                                       } else if (firstEntry.start_time && firstEntry.end_time) {
                                         displayText = `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}`;
@@ -722,19 +723,14 @@ const Employees = () => {
                                                         firstEntry.recup ? 'status-recup' : 
                                                         'status-gewerkt';
                                       
-                                      // Determine display text - check status flags first, then time ranges
-                                      let displayText = 'Gewerkt';
-                                      if (firstEntry.verlof) {
-                                        displayText = 'Verlof';
-                                      } else if (firstEntry.ziek) {
-                                        displayText = 'Ziek';
-                                      } else if (firstEntry.niet_gewerkt) {
-                                        displayText = 'Niet gewerkt';
-                                      } else if (firstEntry.recup) {
-                                        displayText = 'Recup';
-                                      } else if (firstEntry.start_time && firstEntry.end_time) {
-                                        displayText = `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}`;
-                                      }
+                                      // Determine display text - use EXACT same logic as statusClass (which works)
+                                      const displayText = firstEntry.verlof ? 'Verlof' : 
+                                                         firstEntry.ziek ? 'Ziek' : 
+                                                         firstEntry.niet_gewerkt ? 'Niet gewerkt' : 
+                                                         firstEntry.recup ? 'Recup' : 
+                                                         firstEntry.start_time && firstEntry.end_time ? 
+                                                           `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}` : 
+                                                           'Gewerkt';
                                       
                                       return (
                                         <>
