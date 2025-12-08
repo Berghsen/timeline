@@ -1405,29 +1405,27 @@
     padding: 1.25rem;
     padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px) + 1rem);
     border-top: 2px solid #eee;
-    position: sticky;
-    bottom: 0;
+    position: relative;
     background: white;
-    z-index: 10;
     flex-shrink: 0;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
     margin-bottom: 0;
   }
 
   .form-actions {
     flex-direction: row;
-    gap: 0.75rem;
+    gap: 0.5rem;
     width: 100%;
     justify-content: flex-start;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    align-items: center;
   }
 
   .submit-button,
   .cancel-button {
-    flex: 1;
-    min-width: 120px;
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 1rem 0.75rem;
+    font-size: 0.95rem;
     font-weight: 600;
     box-sizing: border-box;
     min-height: 52px;
@@ -1436,6 +1434,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
   }
 
   .delete-button-form {
@@ -1452,6 +1451,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
 
   .submit-button:active {
@@ -1615,10 +1615,7 @@
     flex-shrink: 0;
     border-top: 2px solid #eee;
     background: white;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    position: relative;
   }
 
   .entry-modal-content .form-row {
