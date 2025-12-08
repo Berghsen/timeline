@@ -692,7 +692,22 @@
 .week-navigation,
 .month-navigation {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
+}
+
+.nav-arrow {
+  flex: 0 0 auto;
+  min-width: 48px;
+  padding: 0.625rem 1rem;
+  font-size: 1.2rem;
+}
+
+.week-navigation .nav-button.today,
+.month-navigation .nav-button.today {
+  flex: 1;
+  margin: 0 auto;
 }
 
 .week-title {
@@ -950,10 +965,26 @@
   .weekly-header .week-navigation,
   .monthly-header .month-navigation {
     order: 2;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.5rem;
     width: 100%;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-arrow {
+    flex: 0 0 auto;
+    min-width: 44px;
+    width: auto;
+    padding: 0.75rem 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .week-navigation .nav-button.today,
+  .month-navigation .nav-button.today {
+    flex: 1;
+    margin: 0;
+    text-align: center;
   }
 
   .weekly-header .add-entry-button,
@@ -1014,10 +1045,19 @@
 
 
   .nav-button {
-    width: 100%;
     padding: 0.75rem;
     font-size: 0.9rem;
     box-sizing: border-box;
+  }
+
+  .nav-button.nav-arrow {
+    width: auto;
+    min-width: 44px;
+  }
+
+  .nav-button.today {
+    width: auto;
+    flex: 1;
   }
 
   .week-title,
@@ -1029,7 +1069,7 @@
   }
 
   .week-calendar {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
 

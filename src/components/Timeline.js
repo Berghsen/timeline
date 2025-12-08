@@ -837,14 +837,14 @@ const Timeline = () => {
               </button>
             </div>
             <div className="week-navigation">
-              <button onClick={() => navigateWeek(-1)} className="nav-button">
-                ← Vorige Week
+              <button onClick={() => navigateWeek(-1)} className="nav-button nav-arrow">
+                ←
               </button>
               <button onClick={goToCurrentWeek} className="nav-button today">
                 Huidige Week
               </button>
-              <button onClick={() => navigateWeek(1)} className="nav-button">
-                Volgende Week →
+              <button onClick={() => navigateWeek(1)} className="nav-button nav-arrow">
+                →
               </button>
             </div>
             <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
@@ -996,14 +996,14 @@ const Timeline = () => {
               </button>
             </div>
             <div className="month-navigation">
-              <button onClick={() => navigateMonth(-1)} className="nav-button">
-                ← Vorige Maand
+              <button onClick={() => navigateMonth(-1)} className="nav-button nav-arrow">
+                ←
               </button>
               <button onClick={goToCurrentMonth} className="nav-button today">
                 Huidige Maand
               </button>
-              <button onClick={() => navigateMonth(1)} className="nav-button">
-                Volgende Maand →
+              <button onClick={() => navigateMonth(1)} className="nav-button nav-arrow">
+                →
               </button>
             </div>
             <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">

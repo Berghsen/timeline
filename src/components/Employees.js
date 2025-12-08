@@ -45,7 +45,7 @@ const Employees = () => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [timeEntries, setTimeEntries] = useState([]);
-  const [viewMode, setViewMode] = useState('weekly'); // 'weekly' or 'monthly'
+  const [viewMode, setViewMode] = useState('monthly'); // 'weekly' or 'monthly'
   const [travelTime, setTravelTime] = useState(0);
   const [editingTravelTime, setEditingTravelTime] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
@@ -624,17 +624,17 @@ const Employees = () => {
                     <div className="calendar-view">
                       <div className="weekly-header">
                         <div className="week-title">{getWeekTitle()}</div>
-                        <div className="week-navigation">
-                          <button onClick={() => navigateWeek(-1)} className="nav-button">
-                            ← Vorige Week
-                          </button>
-                          <button onClick={goToCurrentWeek} className="nav-button today">
-                            Huidige Week
-                          </button>
-                          <button onClick={() => navigateWeek(1)} className="nav-button">
-                            Volgende Week →
-                          </button>
-                        </div>
+                          <div className="week-navigation">
+                            <button onClick={() => navigateWeek(-1)} className="nav-button nav-arrow">
+                              ←
+                            </button>
+                            <button onClick={goToCurrentWeek} className="nav-button today">
+                              Huidige Week
+                            </button>
+                            <button onClick={() => navigateWeek(1)} className="nav-button nav-arrow">
+                              →
+                            </button>
+                          </div>
                       </div>
                       <div className="week-totals">
                         <div className="total-item">
@@ -737,14 +737,14 @@ const Employees = () => {
                           {new Date(currentYear, currentMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                         </div>
                         <div className="month-navigation">
-                          <button onClick={() => navigateMonth(-1)} className="nav-button">
-                            ← Vorige Maand
+                          <button onClick={() => navigateMonth(-1)} className="nav-button nav-arrow">
+                            ←
                           </button>
                           <button onClick={goToCurrentMonth} className="nav-button today">
                             Huidige Maand
                           </button>
-                          <button onClick={() => navigateMonth(1)} className="nav-button">
-                            Volgende Maand →
+                          <button onClick={() => navigateMonth(1)} className="nav-button nav-arrow">
+                            →
                           </button>
                         </div>
                       </div>
