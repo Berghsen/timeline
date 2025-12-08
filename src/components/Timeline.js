@@ -913,6 +913,14 @@ const Timeline = () => {
               <div className="stat-label">Totaal gewerkte uren in {getMonthStats().monthName}</div>
               <div className="stat-value">{Math.floor(getMonthStats().totalHours / 60)}u {getMonthStats().totalHours % 60}m</div>
             </div>
+            <div className="stat-card">
+              <div className="stat-label">Nachturen (1:00 - 6:00)</div>
+              <div className="stat-value">{Math.floor(getMonthStats().nightHours / 60)}u {getMonthStats().nightHours % 60}m</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Zondaguren</div>
+              <div className="stat-value">{Math.floor(getMonthStats().sundayHours / 60)}u {getMonthStats().sundayHours % 60}m</div>
+            </div>
           </div>
           <div className="month-calendar">
             {getMonthDates().map((date, index) => {
