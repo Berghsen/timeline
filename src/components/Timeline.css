@@ -1176,6 +1176,10 @@
     touch-action: none;
     -webkit-overflow-scrolling: none;
     overscroll-behavior: none;
+    background: rgba(0, 0, 0, 0.5);
+    visibility: visible;
+    opacity: 1;
+    display: flex;
   }
 
   .entry-modal-content {
@@ -1197,6 +1201,10 @@
     background: white;
     z-index: 10001;
     pointer-events: auto;
+    visibility: visible;
+    opacity: 1;
+    animation: none;
+    transform: none;
   }
 
   .entry-modal-content .form-header {
@@ -1495,6 +1503,15 @@
     touch-action: none;
     -webkit-overflow-scrolling: none;
     z-index: 10000;
+    background: rgba(0, 0, 0, 0.5);
+    visibility: visible;
+    opacity: 1;
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 
   .entry-modal-content {
@@ -1511,6 +1528,13 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    visibility: visible;
+    opacity: 1;
+    background: white;
+    z-index: 10001;
+    position: relative;
+    animation: none;
+    transform: none;
   }
 
   .entry-modal-content .form-header {
