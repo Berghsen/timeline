@@ -1100,6 +1100,10 @@
     width: auto;
   }
 
+  .export-button {
+    display: none;
+  }
+
   .weekly-header .add-entry-button,
   .monthly-header .add-entry-button,
   .weekly-header .export-button,
@@ -1561,6 +1565,10 @@
     justify-content: center;
     margin-bottom: 0.5rem;
     width: 100%;
+  }
+
+  .export-button {
+    display: none;
   }
 
   .add-entry-button,

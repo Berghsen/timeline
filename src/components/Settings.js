@@ -33,8 +33,14 @@ const Settings = () => {
 
       if (error) throw error;
 
+      // Wait a bit for the database to update
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Refresh the user profile in AuthContext to update the UI
       await refreshProfile();
+
+      // Update local state to reflect the change immediately
+      setFullName(fullName);
 
       setSuccess('Naam succesvol bijgewerkt');
       setTimeout(() => setSuccess(''), 3000);

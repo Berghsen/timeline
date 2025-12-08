@@ -48,8 +48,14 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
               href="https://apps.trg.eu/planning/index.php"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => {
-                if (onClose) onClose();
+              onClick={(e) => {
+                if (window.innerWidth <= 768) {
+                  e.preventDefault();
+                  if (onClose) onClose();
+                  window.location.href = 'https://apps.trg.eu/planning/index.php';
+                } else {
+                  if (onClose) onClose();
+                }
               }}
             >
               Planning
@@ -64,8 +70,14 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
               href="https://www.hrms.be/web3/weblogin"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => {
-                if (onClose) onClose();
+              onClick={(e) => {
+                if (window.innerWidth <= 768) {
+                  e.preventDefault();
+                  if (onClose) onClose();
+                  window.location.href = 'https://www.hrms.be/web3/weblogin';
+                } else {
+                  if (onClose) onClose();
+                }
               }}
             >
               HRMS
@@ -95,8 +107,14 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
               href="https://apps.trg.eu/planning/index.php"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => {
-                if (onClose) onClose();
+              onClick={(e) => {
+                if (window.innerWidth <= 768) {
+                  e.preventDefault();
+                  if (onClose) onClose();
+                  window.location.href = 'https://apps.trg.eu/planning/index.php';
+                } else {
+                  if (onClose) onClose();
+                }
               }}
             >
               Planning
@@ -111,8 +129,14 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
               href="https://www.hrms.be/web3/weblogin"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => {
-                if (onClose) onClose();
+              onClick={(e) => {
+                if (window.innerWidth <= 768) {
+                  e.preventDefault();
+                  if (onClose) onClose();
+                  window.location.href = 'https://www.hrms.be/web3/weblogin';
+                } else {
+                  if (onClose) onClose();
+                }
               }}
             >
               HRMS

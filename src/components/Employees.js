@@ -141,7 +141,7 @@ const Employees = () => {
 
   const handleEmployeeClick = (employee) => {
     setSelectedEmployee(employee);
-    setViewMode('weekly');
+    setViewMode('monthly');
     setTravelTime(employee.travel_time_minutes || 0);
     // fetchEmployeeEntries will be called by useEffect
   };

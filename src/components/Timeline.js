@@ -11,7 +11,7 @@ const Timeline = () => {
   const [weekEntries, setWeekEntries] = useState([]);
   const [monthEntries, setMonthEntries] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState('weekly'); // 'weekly' or 'monthly'
+  const [viewMode, setViewMode] = useState('monthly'); // 'weekly' or 'monthly'
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     const year = today.getFullYear();

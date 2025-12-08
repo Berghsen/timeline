@@ -261,12 +261,6 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
       <div className="absence-certificates-header">
         <h1>Afwezigheidsattesten</h1>
         <div className="header-actions">
-          <button
-            className="refresh-button"
-            onClick={fetchCertificates}
-          >
-            🔄 Verversen
-          </button>
           {!isAdmin && (
             <button
               className="upload-button"
