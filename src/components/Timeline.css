@@ -427,6 +427,11 @@
   color: white;
   border-color: #667eea;
   padding: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .export-button svg {
@@ -560,13 +565,25 @@
   z-index: 10;
 }
 
+.close-form-button.desktop-only {
+  display: none;
+}
+
 .close-form-button.mobile-only {
   display: flex;
+}
+
+.close-form-button.desktop-only {
+  display: none;
 }
 
 @media (min-width: 769px) {
   .close-form-button.mobile-only {
     display: none;
+  }
+  
+  .close-form-button.desktop-only {
+    display: flex;
   }
 }
 
@@ -1560,6 +1577,14 @@
   .export-button svg {
     width: 18px;
     height: 18px;
+  }
+
+  .export-button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+    z-index: 1;
+    position: relative;
   }
 
   .entry-modal-overlay {

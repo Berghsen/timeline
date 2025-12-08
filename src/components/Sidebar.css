@@ -63,7 +63,8 @@
   padding: 1rem 0;
 }
 
-.nav-item {
+.nav-item,
+.nav-item-external {
   width: 100%;
   padding: 1rem 1.5rem;
   background: none;
@@ -76,6 +77,10 @@
   border-left: 3px solid transparent;
   position: relative;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
 }
 
 .nav-item::before {
@@ -107,6 +112,37 @@
 
 .nav-item.active::before {
   width: 100%;
+}
+
+.nav-item-external::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item-external:hover {
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+}
+
+.nav-item-external:hover::before {
+  width: 100%;
+}
+
+.external-icon {
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.nav-item-external:hover .external-icon {
+  opacity: 1;
 }
 
 .sidebar-footer {
