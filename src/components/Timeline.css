@@ -932,14 +932,19 @@
     gap: 0.5rem;
   }
 
-  .weekly-header {
+  .weekly-header,
+  .monthly-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
 
-  .week-navigation {
+  .week-navigation,
+  .month-navigation {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
     justify-content: center;
-    flex-wrap: wrap;
   }
 
   .statistics-section {
@@ -1003,7 +1008,8 @@
     box-sizing: border-box;
   }
 
-  .week-title {
+  .week-title,
+  .month-title {
     font-size: 0.95rem;
     text-align: center;
     margin: 0.5rem 0;
@@ -1288,22 +1294,6 @@
     flex-shrink: 0;
   }
 
-  .month-header {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .month-navigation {
-    flex-direction: column;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  .month-title {
-    font-size: 1rem;
-    text-align: center;
-    padding: 0.5rem;
-  }
 
   .statistics-section {
     grid-template-columns: 1fr;
@@ -1422,7 +1412,8 @@
     padding: 0.6rem 0.4rem;
   }
 
-  .week-title {
+  .week-title,
+  .month-title {
     font-size: 0.9rem;
   }
 

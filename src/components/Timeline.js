@@ -945,21 +945,25 @@ const Timeline = () => {
                     {dateEntries.length > 0 ? (
                       <>
                         {(() => {
-                          const hasStatus = firstEntry.niet_gewerkt || firstEntry.verlof || firstEntry.ziek || firstEntry.recup;
+                          // Re-get firstEntry inside IIFE to ensure we have the latest reference
+                          const entry = dateEntries[0];
+                          if (!entry) return null;
+                          
+                          const hasStatus = entry.niet_gewerkt || entry.verlof || entry.ziek || entry.recup;
                           
                           // Determine display text - check recup FIRST, then other statuses, then time ranges
                           // "Gewerkt" should never be shown as text - it's only a green colored state
                           let displayText = '';
-                          if (firstEntry.recup) {
+                          if (entry.recup === true || entry.recup === 'true' || entry.recup === 1) {
                             displayText = 'Recup';
-                          } else if (firstEntry.verlof) {
+                          } else if (entry.verlof === true || entry.verlof === 'true' || entry.verlof === 1) {
                             displayText = 'Verlof';
-                          } else if (firstEntry.ziek) {
+                          } else if (entry.ziek === true || entry.ziek === 'true' || entry.ziek === 1) {
                             displayText = 'Ziek';
-                          } else if (firstEntry.niet_gewerkt) {
+                          } else if (entry.niet_gewerkt === true || entry.niet_gewerkt === 'true' || entry.niet_gewerkt === 1) {
                             displayText = 'Niet gewerkt';
-                          } else if (firstEntry.start_time && firstEntry.end_time) {
-                            displayText = `${firstEntry.start_time.substring(0, 5)} - ${firstEntry.end_time.substring(0, 5)}`;
+                          } else if (entry.start_time && entry.end_time) {
+                            displayText = `${entry.start_time.substring(0, 5)} - ${entry.end_time.substring(0, 5)}`;
                           }
                           // If no display text, don't show anything (the green color from statusClass will indicate "gewerkt")
                           
@@ -970,7 +974,7 @@ const Timeline = () => {
                                   {displayText}
                                 </div>
                               )}
-                              {!hasStatus && firstEntry.start_time && firstEntry.end_time && (
+                              {!hasStatus && entry.start_time && entry.end_time && (
                                 <div className="day-total">
                                   {Math.floor(totalMinutes / 60)}u {totalMinutes % 60}m
                                 </div>
