@@ -916,10 +916,6 @@ const Timeline = () => {
       {showForm && (
         <div className="entry-modal-overlay" onClick={handleCancel}>
           <div className="entry-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="form-header">
-              <h2>{editingId ? 'Item Bewerken' : 'Nieuw Item'}</h2>
-              <button className="close-form-button" onClick={handleCancel}>×</button>
-            </div>
             {error && <div className="error-message">{error}</div>}
             <form onSubmit={handleSubmit}>
             <div className="form-row">
