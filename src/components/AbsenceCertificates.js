@@ -15,6 +15,7 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [comment, setComment] = useState('');
+  const [title, setTitle] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileError, setFileError] = useState('');
 
@@ -173,6 +174,7 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
           start_date: startDate,
           end_date: endDate,
           comment: comment || null,
+          title: title || null,
           file_url: urlData.publicUrl,
           file_name: selectedFile.name,
           file_type: selectedFile.type
@@ -190,6 +192,7 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
       setStartDate('');
       setEndDate('');
       setComment('');
+      setTitle('');
       setSelectedFile(null);
       setShowUploadForm(false);
       document.getElementById('file-input').value = '';
@@ -323,6 +326,18 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
             </div>
 
             <div className="form-group">
+              <label htmlFor="title">Titel *</label>
+              <input
+                id="title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Bijv. Ziekteverlof, Vakantie, etc."
+                required
+              />
+            </div>
+
+            <div className="form-group">
               <label htmlFor="comment">Opmerking</label>
               <textarea
                 id="comment"
@@ -378,9 +393,9 @@ const AbsenceCertificates = ({ isAdmin = false }) => {
               <div className="certificate-header">
                 <div className="certificate-info">
                   <h3>
-                    {isAdmin && cert.user_profiles
+                    {cert.title || (isAdmin && cert.user_profiles
                       ? cert.user_profiles.full_name || cert.user_profiles.email
-                      : 'Mijn Attest'}
+                      : 'Mijn Attest')}
                   </h3>
                   <div className="certificate-dates">
                     {cert.start_date === cert.end_date

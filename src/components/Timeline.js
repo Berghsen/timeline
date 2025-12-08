@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import './Timeline.css';
 
@@ -52,21 +52,41 @@ const Timeline = () => {
     }
   }, [selectedDate, viewMode, currentWeekStart, currentMonth, currentYear]);
 
-  // Prevent body scroll when modal is open
+  // Prevent body scroll when modal is open and preserve scroll position
+  const scrollPositionRef = useRef(0);
+  
   useEffect(() => {
     if (showForm) {
-      document.body.style.overflow = 'hidden';
+      // Save current scroll position
+      scrollPositionRef.current = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
       document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollPositionRef.current}px`;
       document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = '';
+      // Restore scroll position
+      const scrollY = scrollPositionRef.current;
       document.body.style.position = '';
+      document.body.style.top = '';
       document.body.style.width = '';
+      document.body.style.overflow = '';
+      // Use requestAnimationFrame to ensure DOM is updated before scrolling
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
     }
     return () => {
-      document.body.style.overflow = '';
+      // Cleanup on unmount
+      const scrollY = scrollPositionRef.current;
       document.body.style.position = '';
+      document.body.style.top = '';
       document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollY);
+        });
+      }
     };
   }, [showForm]);
 

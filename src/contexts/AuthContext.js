@@ -157,10 +157,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && session.user) {
+        setLoading(true);
         await fetchUserProfile(session.user, false);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error refreshing profile:', error);
+      setLoading(false);
     }
   };
 
