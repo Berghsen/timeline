@@ -465,6 +465,14 @@
 }
 
 @media (max-width: 768px) {
+  .entry-modal-content .close-form-button.mobile-only {
+    display: flex;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+  }
+
   .entry-modal-overlay {
     align-items: stretch;
     overflow: hidden;
@@ -540,12 +548,26 @@
   cursor: pointer;
   width: 36px;
   height: 36px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   transition: all 0.3s;
   line-height: 1;
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
+}
+
+.close-form-button.mobile-only {
+  display: flex;
+}
+
+@media (min-width: 769px) {
+  .close-form-button.mobile-only {
+    display: none;
+  }
 }
 
 .close-form-button:hover {
@@ -1409,7 +1431,7 @@
   .entry-modal-content .form-actions {
     margin-top: auto;
     padding: 1.25rem;
-    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px) + 2rem);
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px) + 3rem);
     border-top: 2px solid #eee;
     position: relative;
     background: white;
@@ -1610,7 +1632,7 @@
   
   .entry-modal-content .form-actions {
     padding: 0.75rem;
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px) + 2rem);
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px) + 3rem);
     margin-top: auto;
     flex-shrink: 0;
     border-top: 2px solid #eee;
