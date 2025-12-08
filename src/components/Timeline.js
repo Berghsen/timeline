@@ -61,17 +61,26 @@ const Timeline = () => {
     if (showForm) {
       // Save current scroll position
       scrollPositionRef.current = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
-      // Prevent background scrolling
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollPositionRef.current}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-      document.body.style.height = '100%';
-      // Prevent touch scrolling on iOS
-      document.body.style.touchAction = 'none';
-      // Also prevent scrolling on html element
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.height = '100%';
+      
+      // Scroll to top first, especially important on mobile
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      
+      // Small delay to ensure scroll completes before fixing body
+      setTimeout(() => {
+        // Prevent background scrolling
+        document.body.style.position = 'fixed';
+        document.body.style.top = '0';
+        document.body.style.width = '100%';
+        document.body.style.overflow = 'hidden';
+        document.body.style.height = '100%';
+        // Prevent touch scrolling on iOS
+        document.body.style.touchAction = 'none';
+        // Also prevent scrolling on html element
+        document.documentElement.style.overflow = 'hidden';
+        document.documentElement.style.height = '100%';
+      }, 10);
     } else {
       // Restore scroll position
       const scrollY = scrollPositionRef.current;
@@ -1006,6 +1015,9 @@ const Timeline = () => {
               <button type="submit" className="submit-button">
                 {editingId ? 'Bijwerken' : 'Opslaan'}
               </button>
+              <button type="button" onClick={handleCancel} className="cancel-button">
+                Annuleren
+              </button>
               {editingId && (
                 <button 
                   type="button" 
@@ -1017,14 +1029,10 @@ const Timeline = () => {
                   }} 
                   className="delete-button-form"
                   title="Verwijderen"
-                  style={{ background: 'none', border: 'none', padding: 0, fontSize: '1.2rem', cursor: 'pointer', color: '#000' }}
                 >
                   🗑️
                 </button>
               )}
-              <button type="button" onClick={handleCancel} className="cancel-button">
-                Annuleren
-              </button>
             </div>
           </form>
           </div>
