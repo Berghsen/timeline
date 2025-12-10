@@ -124,7 +124,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signIn = async (email, password) => {
+  const signIn = async (identifier, password) => {
+    // Allow login with either full email or username (prefix before @allrent.be)
+    const trimmed = (identifier || '').trim().toLowerCase();
+    const email = trimmed.includes('@') ? trimmed : `${trimmed}@allrent.be`;
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
