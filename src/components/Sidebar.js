@@ -13,13 +13,6 @@ const Sidebar = ({ user, activePage, setActivePage, onSignOut, isAdmin, isOpen, 
         ×
       </button>
       <div className="sidebar-header">
-        <div className="logo-container">
-          <img 
-            src="https://cdn.asp.events/CLIENT_IBC_4ED0594D_5056_B739_542FB395BDA17423/sites/ibc-2023/media/libraries/2024-verified-suppliers/hpj-.png/fit-in/700x9999/filters:no_upscale()" 
-            alt="Company Logo" 
-            className="company-logo"
-          />
-        </div>
         <h2>Tijdregistratie</h2>
         <div className="user-info">
           <div className="user-name">{user?.profile?.full_name || user?.email}</div>
