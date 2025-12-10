@@ -39,6 +39,8 @@ const Timeline = () => {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
+    if (!user) return; // Wait until user is loaded before fetching
+
     fetchWeekEntries();
     fetchMonthEntries();
     if (viewMode === 'weekly') {
@@ -52,7 +54,7 @@ const Timeline = () => {
     } else {
       fetchAllEntries();
     }
-  }, [selectedDate, viewMode, currentWeekStart, currentMonth, currentYear]);
+  }, [user, selectedDate, viewMode, currentWeekStart, currentMonth, currentYear]);
 
   // Prevent body scroll when modal is open and preserve scroll position
   const scrollPositionRef = useRef(0);
@@ -160,6 +162,7 @@ const Timeline = () => {
   };
 
   const fetchWeekEntries = async () => {
+    if (!user?.id) return;
     try {
       const weekEnd = new Date(currentWeekStart);
       weekEnd.setDate(weekEnd.getDate() + 6);
@@ -185,10 +188,12 @@ const Timeline = () => {
   };
 
   const fetchMonthEntries = async () => {
+    if (!user?.id) return;
     return fetchMonthEntriesForStats(currentMonth, currentYear);
   };
 
   const fetchMonthEntriesForStats = async (targetMonth, targetYear) => {
+    if (!user?.id) return;
     try {
       const firstDay = new Date(targetYear, targetMonth, 1);
       const lastDay = new Date(targetYear, targetMonth + 1, 0);
