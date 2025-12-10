@@ -38,6 +38,23 @@ const Timeline = () => {
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
 
+  const savePDF = (doc, filename) => {
+    try {
+      const blob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (err) {
+      console.error('Falling back to doc.save:', err);
+      doc.save(filename);
+    }
+  };
+
   useEffect(() => {
     if (!user) return; // Wait until user is loaded before fetching
 
@@ -72,9 +89,9 @@ const Timeline = () => {
       // Small delay to ensure scroll completes before fixing body
       setTimeout(() => {
         // Prevent background scrolling
-        document.body.style.position = 'fixed';
+      document.body.style.position = 'fixed';
         document.body.style.top = '0';
-        document.body.style.width = '100%';
+      document.body.style.width = '100%';
         document.body.style.overflow = 'hidden';
         document.body.style.height = '100%';
         // Prevent touch scrolling on iOS
@@ -881,7 +898,7 @@ const Timeline = () => {
       ? `tijdregistratie-week-${getWeekNumber(currentWeekStart)}-${currentWeekStart.getFullYear()}.pdf`
       : `tijdregistratie-${new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }).replace(/\s+/g, '-').toLowerCase()}.pdf`;
 
-    doc.save(filename);
+    savePDF(doc, filename);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Er is een fout opgetreden bij het genereren van de PDF. Probeer het opnieuw.');
@@ -1080,9 +1097,9 @@ const Timeline = () => {
                   <path d="M10 9H9H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-              <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
-                +
-              </button>
+            <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
+              +
+            </button>
             </div>
           </div>
           <div className="week-title">{getWeekTitle()}</div>
@@ -1187,9 +1204,9 @@ const Timeline = () => {
                           return (
                             <>
                               {displayText && (
-                                <div className={`day-status ${statusClass}`}>
+                              <div className={`day-status ${statusClass}`}>
                                   {displayText}
-                                </div>
+                              </div>
                               )}
                               {!hasStatus && firstEntry.start_time && firstEntry.end_time && (
                                 <div className="day-total">
@@ -1250,9 +1267,9 @@ const Timeline = () => {
                   <path d="M10 9H9H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-              <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
-                +
-              </button>
+            <button className="add-entry-button" onClick={handleAddNew} title="Nieuw item toevoegen">
+              +
+            </button>
             </div>
           </div>
           <div className="month-title">
@@ -1352,9 +1369,9 @@ const Timeline = () => {
                           return (
                             <>
                               {displayText && (
-                                <div className={`day-status ${statusClass}`}>
+                              <div className={`day-status ${statusClass}`}>
                                   {displayText}
-                                </div>
+                              </div>
                               )}
                               {!hasStatus && entry.start_time && entry.end_time && (
                                 <div className="day-total">

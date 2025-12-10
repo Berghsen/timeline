@@ -67,6 +67,23 @@ const Employees = () => {
     fetchEmployees();
   }, []);
 
+  const savePDF = (doc, filename) => {
+    try {
+      const blob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (err) {
+      console.error('Falling back to doc.save:', err);
+      doc.save(filename);
+    }
+  };
+
   useEffect(() => {
     if (selectedEmployee) {
       console.log('Selected employee changed, fetching entries for:', selectedEmployee.id, selectedEmployee.email);
@@ -514,7 +531,7 @@ const Employees = () => {
         ? `tijdregistratie-${employeeName.replace(/\s+/g, '-')}-week-${getWeekNumber(currentWeekStart)}-${currentWeekStart.getFullYear()}.pdf`
         : `tijdregistratie-${employeeName.replace(/\s+/g, '-')}-${new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }).replace(/\s+/g, '-').toLowerCase()}.pdf`;
 
-      doc.save(filename);
+      savePDF(doc, filename);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Er is een fout opgetreden bij het genereren van de PDF. Probeer het opnieuw.');
