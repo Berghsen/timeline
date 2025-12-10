@@ -393,9 +393,9 @@ const Employees = () => {
         });
         
         periodTitle = new Date(currentYear, currentMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
-        const totals = getMonthTotals();
-        totalMinutes = totals.totalHours || 0;
-        stats = totals;
+        const monthStats = getMonthStats();
+        totalMinutes = monthStats.totalHours || 0;
+        stats = monthStats;
         
         // Get all days of the month
         const startDate = new Date(firstDay);
